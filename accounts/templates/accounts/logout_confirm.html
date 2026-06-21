@@ -1,0 +1,19 @@
+{% extends 'books/base.html' %}
+
+{% block title %}Tizimdan chiqish — KitobX{% endblock %}
+
+{% block content %}
+<section class="delete-layout" data-reveal>
+    <div class="delete-card">
+        <span class="delete-icon"><svg><use href="#icon-log-out"></use></svg></span>
+        <span class="eyebrow">Tasdiqlash</span>
+        <h1>Tizimdan chiqishni xohlaysizmi?</h1>
+        <p>Chiqsangiz, kitob qo'shish va tahrirlash uchun qayta login qilishingiz kerak bo'ladi.</p>
+        <form method="post" class="page-actions centered">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary"><svg><use href="#icon-log-out"></use></svg><span>Chiqish</span></button>
+            <a href="{% url 'profile' %}" class="btn btn-ghost"><svg><use href="#icon-back"></use></svg><span>Bekor qilish</span></a>
+        </form>
+    </div>
+</section>
+{% endblock %}

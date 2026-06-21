@@ -1,0 +1,49 @@
+{% extends 'books/base.html' %}
+
+{% block title %}{{ page_title }} — KitobX{% endblock %}
+
+{% block content %}
+<section class="form-layout" data-reveal>
+    <aside class="form-aside">
+        <a href="{% if book %}{% url 'book_detail' book.id %}{% else %}{% url 'book_list' %}{% endif %}" class="back-link"><svg><use href="#icon-back"></use></svg><span>Orqaga qaytish</span></a>
+        <span class="eyebrow"><svg><use href="#icon-admin"></use></svg> Admin kontent</span>
+        <h1>{{ page_title }}</h1>
+        <p>Kitob saqlanishi uchun banner rasmi va PDF fayl majburiy. Oddiy foydalanuvchi kitobni faqat o'qiydi, admin esa tahrirlash va o'chirish huquqiga ega.</p>
+        <div class="hint-card">
+            <svg><use href="#icon-info"></use></svg>
+            <span>PDF yuklanmasa kitob saqlanmaydi. Banner detail va reader sahifalarida ishlatiladi.</span>
+        </div>
+    </aside>
+
+    <form method="post" enctype="multipart/form-data" class="panel-form book-form" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group {% if field.errors %}has-error{% endif %}">
+                <label for="{{ field.id_for_label }}">
+                    {% if field.name == 'title' %}<svg><use href="#icon-book"></use></svg>
+                    {% elif field.name == 'author' %}<svg><use href="#icon-user"></use></svg>
+                    {% elif field.name == 'published_year' %}<svg><use href="#icon-calendar"></use></svg>
+                    {% elif field.name == 'description' %}<svg><use href="#icon-info"></use></svg>
+                    {% elif field.name == 'cover' or field.name == 'banner' %}<svg><use href="#icon-image"></use></svg>
+                    {% elif field.name == 'pdf_file' %}<svg><use href="#icon-pdf"></use></svg>
+                    {% elif field.name == 'category' %}<svg><use href="#icon-tag"></use></svg>
+                    {% else %}<svg><use href="#icon-edit"></use></svg>{% endif %}
+                    <span>{{ field.label }}</span>
+                </label>
+                {{ field }}
+                {% if field.help_text %}<small class="help-text">{{ field.help_text }}</small>{% endif %}
+                {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+        {% endfor %}
+
+        {% if form.non_field_errors %}
+            <div class="form-errors">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="page-actions">
+            <button class="btn btn-primary" type="submit"><svg><use href="#icon-save"></use></svg><span>Saqlash</span></button>
+            <a href="{% if book %}{% url 'book_detail' book.id %}{% else %}{% url 'book_list' %}{% endif %}" class="btn btn-ghost"><svg><use href="#icon-x"></use></svg><span>Bekor qilish</span></a>
+        </div>
+    </form>
+</section>
+{% endblock %}

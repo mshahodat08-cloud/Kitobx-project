@@ -1,0 +1,121 @@
+{% extends 'books/base.html' %}
+
+{% block title %}KitobX — Katalog{% endblock %}
+
+{% block content %}
+<section class="catalog-head" data-reveal>
+    <div>
+        <span class="eyebrow"><svg><use href="#icon-library"></use></svg> Online kutubxona</span>
+        <h1>Kitoblar katalogi</h1>
+        <p>Kitobni tanlang va PDF reader orqali saytda o'qing. PDF yuklab olish VIP foydalanuvchilar uchun ochiladi.</p>
+    </div>
+    <form method="get" class="catalog-search">
+        <label class="input-control search-control">
+            <svg><use href="#icon-search"></use></svg>
+            <input type="search" name="q" value="{{ query }}" placeholder="Kitob yoki muallif qidirish">
+        </label>
+        <button class="btn btn-primary" type="submit"><svg><use href="#icon-search"></use></svg><span>Qidirish</span></button>
+    </form>
+</section>
+
+<section class="toolbar compact-toolbar" data-reveal>
+    <div class="toolbar-title">
+        <h2>{{ filtered_count }} ta natija</h2>
+        <span>{{ total_books }} kitob · {{ total_categories }} kategoriya · {{ total_reads }} o'qish</span>
+    </div>
+
+    <form method="get" class="filter-form">
+        {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+        <label class="input-control">
+            <svg><use href="#icon-user"></use></svg>
+            <input type="text" name="author" value="{{ author_query }}" placeholder="Muallif">
+        </label>
+        <label class="input-control select-control">
+            <svg><use href="#icon-tag"></use></svg>
+            <select name="category" aria-label="Kategoriya">
+                <option value="">Barcha kategoriyalar</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if category_query == cat.id|stringformat:'s' %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <button type="submit" class="btn btn-secondary"><svg><use href="#icon-filter"></use></svg><span>Filtrlash</span></button>
+        {% if query or author_query or category_query %}
+            <a href="{% url 'book_list' %}" class="btn btn-ghost"><svg><use href="#icon-x"></use></svg><span>Tozalash</span></a>
+        {% endif %}
+    </form>
+</section>
+
+{% if featured_books %}
+<section class="featured-strip" data-reveal>
+    <div class="section-title">
+        <h2>Tavsiya etilganlar</h2>
+        <span><svg><use href="#icon-crown"></use></svg> Admin tanlovi</span>
+    </div>
+    <div class="featured-row">
+        {% for book in featured_books %}
+            <a href="{% url 'book_detail' book.id %}" class="featured-card">
+                {% if book.card_image %}<img src="{{ book.card_image.url }}" alt="{{ book.title }}" loading="lazy">{% else %}<span><svg><use href="#icon-book"></use></svg></span>{% endif %}
+                <strong>{{ book.title }}</strong>
+                <small>{{ book.author }}</small>
+                <span class="featured-rating"><svg><use href="#icon-star"></use></svg>{{ book.avg_rating|default:"0"|floatformat:1 }}</span>
+            </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if books %}
+    <section class="book-grid" aria-label="Kitoblar ro'yxati">
+        {% for book in books %}
+            <article class="book-card" data-reveal>
+                <a href="{% url 'book_detail' book.id %}" class="cover-link" aria-label="{{ book.title }} haqida batafsil">
+                    {% if book.card_image %}
+                        <img src="{{ book.card_image.url }}" alt="{{ book.title }}" class="cover" loading="lazy">
+                    {% else %}
+                        <span class="cover-placeholder"><svg><use href="#icon-image"></use></svg><small>Rasm yo'q</small></span>
+                    {% endif %}
+                    <span class="pdf-badge"><svg><use href="#icon-pdf"></use></svg>PDF</span>
+                </a>
+
+                <div class="card-content">
+                    <div class="pill-line"><svg><use href="#icon-tag"></use></svg><span>{% if book.category %}{{ book.category.name }}{% else %}Kategoriyasiz{% endif %}</span></div>
+                    <h3><a href="{% url 'book_detail' book.id %}">{{ book.title }}</a></h3>
+                    <p class="muted-line"><svg><use href="#icon-user"></use></svg><span>{{ book.author }}</span></p>
+                    <div class="card-meta">
+                        <span><svg><use href="#icon-star"></use></svg>{{ book.avg_rating|default:"0"|floatformat:1 }}</span>
+                        <span><svg><use href="#icon-comment"></use></svg>{{ book.reviews_total|default:"0" }}</span>
+                        <span><svg><use href="#icon-eye"></use></svg>{{ book.views_count }}</span>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'book_read' book.id %}" class="btn btn-small btn-primary"><span>O'qish</span><svg><use href="#icon-arrow"></use></svg></a>
+                        <button type="button" class="icon-btn wishlist-btn {% if book.id in nav_wishlist_ids %}active{% endif %}" data-book="{{ book.id }}" data-url="{% url 'wishlist_toggle' book.id %}" aria-label="Wishlistga qo'shish" aria-pressed="{% if book.id in nav_wishlist_ids %}true{% else %}false{% endif %}">
+                            <svg><use href="#icon-heart"></use></svg>
+                        </button>
+                    {% else %}
+                        <a href="{% url 'login' %}?next={% url 'book_read' book.id %}" class="btn btn-small btn-primary"><span>O'qish</span><svg><use href="#icon-lock"></use></svg></a>
+                    {% endif %}
+                    {% if user.is_staff %}
+                        <a href="{% url 'book_update' book.id %}" class="icon-btn" aria-label="Tahrirlash"><svg><use href="#icon-edit"></use></svg></a>
+                        <a href="{% url 'book_delete' book.id %}" class="icon-btn danger-icon" aria-label="O'chirish"><svg><use href="#icon-trash"></use></svg></a>
+                    {% endif %}
+                </div>
+            </article>
+        {% endfor %}
+    </section>
+{% else %}
+    <section class="empty-state" data-reveal>
+        <span class="empty-icon"><svg><use href="#icon-search"></use></svg></span>
+        <h3>Natija topilmadi</h3>
+        <p>Qidiruv so'zini o'zgartiring yoki admin panel orqali yangi kitob qo'shing.</p>
+        {% if user.is_staff %}
+            <a href="{% url 'book_create' %}" class="btn btn-primary"><svg><use href="#icon-plus"></use></svg><span>Kitob qo'shish</span></a>
+        {% else %}
+            <a href="{% url 'book_list' %}" class="btn btn-primary"><svg><use href="#icon-library"></use></svg><span>Katalogga qaytish</span></a>
+        {% endif %}
+    </section>
+{% endif %}
+{% endblock %}

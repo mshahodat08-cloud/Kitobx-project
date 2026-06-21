@@ -1,0 +1,211 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b0610">
+    <script>
+        (function(){
+            try {
+                var saved = localStorage.getItem('kitobx-theme');
+                var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                document.documentElement.dataset.theme = theme;
+            } catch (e) {
+                document.documentElement.dataset.theme = 'light';
+            }
+        })();
+    </script>
+    <title>{% block title %}KitobX — Reading platform{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'books/css/style.css' %}?v=3">
+</head>
+<body>
+    <svg class="svg-sprite" aria-hidden="true" focusable="false">
+        <symbol id="icon-library" viewBox="0 0 24 24"><path d="M5.7 3.2h5.45c.72 0 1.38.32 1.85.82.47-.5 1.13-.82 1.85-.82h3.45A2.7 2.7 0 0 1 21 5.9v14.35h-6.55c-.6 0-1.08.25-1.45.68a1.86 1.86 0 0 0-1.45-.68h-5.1A3.45 3.45 0 0 1 3 16.8V5.9a2.7 2.7 0 0 1 2.7-2.7Zm.55 2a.55.55 0 0 0-.55.55V16.8c0 .8.65 1.45 1.45 1.45h4.05c.28 0 .55.03.8.1V5.75a.55.55 0 0 0-.55-.55h-5.2Zm7.75.55v12.6c.25-.07.52-.1.8-.1h3.5V5.75a.55.55 0 0 0-.55-.55h-3.2a.55.55 0 0 0-.55.55Z"/></symbol>
+        <symbol id="icon-home" viewBox="0 0 24 24"><path d="M4.05 10.65 12 4l7.95 6.65c.22.19.35.46.35.75v7a2.35 2.35 0 0 1-2.35 2.35H14.2v-6.2H9.8v6.2H6.05A2.35 2.35 0 0 1 3.7 18.4v-7c0-.29.13-.56.35-.75Z"/></symbol>
+        <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M11 5.75a1 1 0 0 1 2 0V11h5.25a1 1 0 1 1 0 2H13v5.25a1 1 0 1 1-2 0V13H5.75a1 1 0 1 1 0-2H11V5.75Z"/></symbol>
+        <symbol id="icon-search" viewBox="0 0 24 24"><path d="M10.7 4a6.7 6.7 0 0 1 5.25 10.87l3.65 3.65a.95.95 0 0 1-1.35 1.35l-3.65-3.65A6.7 6.7 0 1 1 10.7 4Zm0 1.9a4.8 4.8 0 1 0 0 9.6 4.8 4.8 0 0 0 0-9.6Z"/></symbol>
+        <symbol id="icon-book" viewBox="0 0 24 24"><path d="M6.5 3h10.2A2.3 2.3 0 0 1 19 5.3V21H7a3 3 0 0 1-3-3V5.5A2.5 2.5 0 0 1 6.5 3Zm-.6 13.4V18c0 .61.49 1.1 1.1 1.1h10.1v-1.6H7c-.4 0-.77-.04-1.1-.16v-.94Zm.6-11.5a.6.6 0 0 0-.6.6v8.5c.34-.13.71-.2 1.1-.2h10.1V5.3a.4.4 0 0 0-.4-.4H6.5Zm2 3.2h6.4v1.7H8.5V8.1Zm0 3.25h5.1v1.7H8.5v-1.7Z"/></symbol>
+        <symbol id="icon-user" viewBox="0 0 24 24"><path d="M12 11.7a4.1 4.1 0 1 0 0-8.2 4.1 4.1 0 0 0 0 8.2Zm0 1.9c-4.2 0-7.25 2.33-8.08 6.08-.12.53.3.92.83.92h14.5c.53 0 .95-.39.83-.92-.83-3.75-3.88-6.08-8.08-6.08Z"/></symbol>
+        <symbol id="icon-user-plus" viewBox="0 0 24 24"><path d="M10.2 11.35a3.8 3.8 0 1 0 0-7.6 3.8 3.8 0 0 0 0 7.6Zm0 1.9c-3.85 0-6.66 2.1-7.44 5.5-.12.54.3.95.84.95h10.3a6.35 6.35 0 0 1-.15-1.35 6.25 6.25 0 0 1 1.67-4.25 8.7 8.7 0 0 0-5.22-.85Zm8.05.55a.9.9 0 0 1 .9.9v1.75h1.75a.9.9 0 0 1 0 1.8h-1.75V20a.9.9 0 0 1-1.8 0v-1.75H15.6a.9.9 0 0 1 0-1.8h1.75V14.7a.9.9 0 0 1 .9-.9Z"/></symbol>
+        <symbol id="icon-log-in" viewBox="0 0 24 24"><path d="M4.75 4A2.75 2.75 0 0 1 7.5 1.25h7A2.75 2.75 0 0 1 17.25 4v3.2h-1.9V4a.85.85 0 0 0-.85-.85h-7a.85.85 0 0 0-.85.85v16a.85.85 0 0 0 .85.85h7a.85.85 0 0 0 .85-.85v-3.2h1.9V20a2.75 2.75 0 0 1-2.75 2.75h-7A2.75 2.75 0 0 1 4.75 20V4Zm10.72 5.13 2.02 1.92H10.4a.95.95 0 1 0 0 1.9h7.09l-2.02 1.92a.95.95 0 0 0 1.31 1.38l3.75-3.56a.95.95 0 0 0 0-1.38l-3.75-3.56a.95.95 0 1 0-1.31 1.38Z"/></symbol>
+        <symbol id="icon-log-out" viewBox="0 0 24 24"><path d="M4.75 4A2.75 2.75 0 0 1 7.5 1.25h7A2.75 2.75 0 0 1 17.25 4v3.2h-1.9V4a.85.85 0 0 0-.85-.85h-7a.85.85 0 0 0-.85.85v16a.85.85 0 0 0 .85.85h7a.85.85 0 0 0 .85-.85v-3.2h1.9V20a2.75 2.75 0 0 1-2.75 2.75h-7A2.75 2.75 0 0 1 4.75 20V4Zm10.78 5.13a.95.95 0 1 1 1.31-1.38l3.75 3.56a.95.95 0 0 1 0 1.38l-3.75 3.56a.95.95 0 1 1-1.31-1.38l2.02-1.92h-7.09a.95.95 0 1 1 0-1.9h7.09l-2.02-1.92Z"/></symbol>
+        <symbol id="icon-calendar" viewBox="0 0 24 24"><path d="M7 2.75a.95.95 0 0 1 .95.95V5h8.1V3.7a.95.95 0 1 1 1.9 0V5h1.2A2.85 2.85 0 0 1 22 7.85v10.3A2.85 2.85 0 0 1 19.15 21H4.85A2.85 2.85 0 0 1 2 18.15V7.85A2.85 2.85 0 0 1 4.85 5h1.2V3.7A.95.95 0 0 1 7 2.75ZM3.9 9.55v8.6c0 .52.43.95.95.95h14.3c.52 0 .95-.43.95-.95v-8.6H3.9Z"/></symbol>
+        <symbol id="icon-eye" viewBox="0 0 24 24"><path d="M12 5.25c4.95 0 8.15 3.18 9.5 6.06.2.44.2.94 0 1.38-1.35 2.88-4.55 6.06-9.5 6.06s-8.15-3.18-9.5-6.06c-.2-.44-.2-.94 0-1.38C3.85 8.43 7.05 5.25 12 5.25Zm0 2a4.75 4.75 0 1 0 0 9.5 4.75 4.75 0 0 0 0-9.5Zm0 1.9a2.85 2.85 0 1 1 0 5.7 2.85 2.85 0 0 1 0-5.7Z"/></symbol>
+        <symbol id="icon-tag" viewBox="0 0 24 24"><path d="M4 6.25A2.25 2.25 0 0 1 6.25 4h5.9c.6 0 1.17.24 1.6.66l5.6 5.6a3.1 3.1 0 0 1 0 4.38l-4.7 4.7a3.1 3.1 0 0 1-4.38 0l-5.6-5.6a2.25 2.25 0 0 1-.67-1.6V6.25Zm4.1 2.9a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Z"/></symbol>
+        <symbol id="icon-edit" viewBox="0 0 24 24"><path d="M17.7 3.65a2.45 2.45 0 0 1 3.46 3.46L8.88 19.39 4 20.5l1.11-4.88L17.7 3.65Zm-1.27 3.04-9.7 9.7-.42 1.84 1.84-.42 9.7-9.7-1.42-1.42Z"/></symbol>
+        <symbol id="icon-trash" viewBox="0 0 24 24"><path d="M9.15 3h5.7l.65 2H20a.95.95 0 0 1 0 1.9h-1.05l-.77 11.52A2.75 2.75 0 0 1 15.43 21H8.57a2.75 2.75 0 0 1-2.75-2.58L5.05 6.9H4A.95.95 0 0 1 4 5h4.5l.65-2Zm-2.18 3.9.74 11.4c.03.5.45.9.96.9h6.66c.51 0 .93-.4.96-.9l.74-11.4H6.97Z"/></symbol>
+        <symbol id="icon-image" viewBox="0 0 24 24"><path d="M5.75 4h12.5A2.75 2.75 0 0 1 21 6.75v10.5A2.75 2.75 0 0 1 18.25 20H5.75A2.75 2.75 0 0 1 3 17.25V6.75A2.75 2.75 0 0 1 5.75 4Zm0 1.9a.85.85 0 0 0-.85.85v8.85l2.95-2.95a2 2 0 0 1 2.82 0l2.03 2.03.9-.9a2 2 0 0 1 2.82 0l2.68 2.68V6.75a.85.85 0 0 0-.85-.85H5.75Zm10.1 2.55a1.65 1.65 0 1 0 0 3.3 1.65 1.65 0 0 0 0-3.3Z"/></symbol>
+        <symbol id="icon-save" viewBox="0 0 24 24"><path d="M5.75 3h10.4L21 7.85v10.4A2.75 2.75 0 0 1 18.25 21H5.75A2.75 2.75 0 0 1 3 18.25V5.75A2.75 2.75 0 0 1 5.75 3Zm1.05 1.9v5h8.1v-5H6.8Zm.8 14.2h8.8v-5H7.6v5Z"/></symbol>
+        <symbol id="icon-x" viewBox="0 0 24 24"><path d="M6.33 5.05 12 10.72l5.67-5.67a.95.95 0 0 1 1.34 1.34L13.34 12l5.67 5.67a.95.95 0 0 1-1.34 1.34L12 13.34l-5.67 5.67a.95.95 0 0 1-1.34-1.34L10.66 12 4.99 6.39a.95.95 0 1 1 1.34-1.34Z"/></symbol>
+        <symbol id="icon-alert" viewBox="0 0 24 24"><path d="M10.45 4.05a1.8 1.8 0 0 1 3.1 0l8.1 14.04A1.8 1.8 0 0 1 20.1 20.8H3.9a1.8 1.8 0 0 1-1.55-2.7l8.1-14.05ZM11.1 9v5.1h1.8V9h-1.8Zm0 6.7v1.9h1.8v-1.9h-1.8Z"/></symbol>
+        <symbol id="icon-filter" viewBox="0 0 24 24"><path d="M4.75 5h14.5a.95.95 0 0 1 .74 1.55L14.1 13.8v5.05a.95.95 0 0 1-.53.85l-3 1.5a.95.95 0 0 1-1.37-.85V13.8L4.01 6.55A.95.95 0 0 1 4.75 5Z"/></symbol>
+        <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M13.2 5.33a.95.95 0 0 1 1.34 0l6 6a.95.95 0 0 1 0 1.34l-6 6a.95.95 0 0 1-1.34-1.34l4.38-4.38H4.2a.95.95 0 1 1 0-1.9h13.38L13.2 6.67a.95.95 0 0 1 0-1.34Z"/></symbol>
+        <symbol id="icon-back" viewBox="0 0 24 24"><path d="M10.8 5.33a.95.95 0 0 1 0 1.34l-4.38 4.38H19.8a.95.95 0 1 1 0 1.9H6.42l4.38 4.38a.95.95 0 1 1-1.34 1.34l-6-6a.95.95 0 0 1 0-1.34l6-6a.95.95 0 0 1 1.34 0Z"/></symbol>
+        <symbol id="icon-menu" viewBox="0 0 24 24"><path d="M4.5 6.35h15v1.9h-15v-1.9Zm0 4.7h15v1.9h-15v-1.9Zm0 4.7h15v1.9h-15v-1.9Z"/></symbol>
+        <symbol id="icon-check" viewBox="0 0 24 24"><path d="M9.3 16.55 5.6 12.86a.95.95 0 1 0-1.34 1.34l4.37 4.37c.37.37.97.37 1.34 0l9.77-9.77a.95.95 0 0 0-1.34-1.34l-9.1 9.09Z"/></symbol>
+        <symbol id="icon-info" viewBox="0 0 24 24"><path d="M12 2.75a9.25 9.25 0 1 0 0 18.5 9.25 9.25 0 0 0 0-18.5Zm.95 14.25h-1.9v-6h1.9v6Zm0-7.8h-1.9V7.3h1.9v1.9Z"/></symbol>
+        <symbol id="icon-sun" viewBox="0 0 24 24"><path d="M12 7.2a4.8 4.8 0 1 1 0 9.6 4.8 4.8 0 0 1 0-9.6ZM11.05 2h1.9v3h-1.9V2Zm0 17h1.9v3h-1.9v-3ZM2 11.05h3v1.9H2v-1.9Zm17 0h3v1.9h-3v-1.9ZM4.57 3.23 6.7 5.35 5.35 6.7 3.23 4.57l1.34-1.34Zm14.08 14.08 2.12 2.12-1.34 1.34-2.12-2.12 1.34-1.34Zm.78-14.08 1.34 1.34-2.12 2.13-1.34-1.35 2.12-2.12ZM5.35 17.3l1.35 1.35-2.13 2.12-1.34-1.34 2.12-2.13Z"/></symbol>
+        <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M20.25 15.4a8.65 8.65 0 0 1-11.6-11.6.9.9 0 0 0-1.05-1.25A9.9 9.9 0 1 0 21.5 16.45a.9.9 0 0 0-1.25-1.05Z"/></symbol>
+        <symbol id="icon-mail" viewBox="0 0 24 24"><path d="M4.75 5h14.5A2.75 2.75 0 0 1 22 7.75v8.5A2.75 2.75 0 0 1 19.25 19H4.75A2.75 2.75 0 0 1 2 16.25v-8.5A2.75 2.75 0 0 1 4.75 5Zm.07 1.9 6.44 5.33a1.15 1.15 0 0 0 1.48 0l6.44-5.33H4.82Zm15.28 1.3-6.15 5.08a3.05 3.05 0 0 1-3.9 0L3.9 8.2v8.05c0 .47.38.85.85.85h14.5c.47 0 .85-.38.85-.85V8.2Z"/></symbol>
+        <symbol id="icon-lock" viewBox="0 0 24 24"><path d="M7.25 10.25V8.1a4.75 4.75 0 0 1 9.5 0v2.15h.55A2.7 2.7 0 0 1 20 12.95v5.35a2.7 2.7 0 0 1-2.7 2.7H6.7A2.7 2.7 0 0 1 4 18.3v-5.35a2.7 2.7 0 0 1 2.7-2.7h.55Zm1.9 0h5.7V8.1a2.85 2.85 0 1 0-5.7 0v2.15Zm2.85 3.1a1 1 0 0 0-.95.95v2.1a.95.95 0 1 0 1.9 0v-2.1a1 1 0 0 0-.95-.95Z"/></symbol>
+        <symbol id="icon-phone" viewBox="0 0 24 24"><path d="M6.85 3.2 9.3 2.6c.8-.2 1.63.2 1.94.96l1.02 2.47c.28.68.08 1.48-.5 1.95l-1.28 1.04a12.2 12.2 0 0 0 4.5 4.5l1.04-1.28c.47-.58 1.27-.78 1.95-.5l2.47 1.02c.76.31 1.16 1.14.96 1.94l-.6 2.45A3.6 3.6 0 0 1 17.3 20C9.96 20 4 14.04 4 6.7a3.6 3.6 0 0 1 2.85-3.5Z"/></symbol>
+        <symbol id="icon-pdf" viewBox="0 0 24 24"><path d="M6.75 2.75h7.2l4.8 4.8v12.2A2.25 2.25 0 0 1 16.5 22H6.75a2.25 2.25 0 0 1-2.25-2.25V5a2.25 2.25 0 0 1 2.25-2.25Zm6.45 1.9V8.3h3.65L13.2 4.65ZM7.4 13.05h1.35c1.2 0 2.1.74 2.1 1.9s-.9 1.9-2.1 1.9h-.4v1.35H7.4v-5.15Zm.95 2.95h.4c.7 0 1.12-.35 1.12-1.05s-.42-1.05-1.12-1.05h-.4V16Zm3.35-2.95h1.55c1.45 0 2.45 1.04 2.45 2.58s-1 2.57-2.45 2.57H11.7v-5.15Zm.95.85v3.45h.53c.92 0 1.52-.65 1.52-1.72s-.6-1.73-1.52-1.73h-.53Zm4.08-.85h3.05v.85h-2.1v1.35h1.85v.85h-1.85v2.1h-.95v-5.15Z"/></symbol>
+        <symbol id="icon-download" viewBox="0 0 24 24"><path d="M11.05 3.5h1.9v8.45l2.85-2.85 1.34 1.34L12 15.58l-5.14-5.14L8.2 9.1l2.85 2.85V3.5ZM5 17.2h1.9v1.4c0 .5.4.9.9.9h8.4c.5 0 .9-.4.9-.9v-1.4H19v1.4a2.8 2.8 0 0 1-2.8 2.8H7.8A2.8 2.8 0 0 1 5 18.6v-1.4Z"/></symbol>
+        <symbol id="icon-crown" viewBox="0 0 24 24"><path d="M4 18.25h16v2H4v-2ZM4.35 6.3l4.35 4.1 3.3-6.15 3.3 6.15 4.35-4.1.95.8-2.1 9.15H5.5L3.4 7.1l.95-.8Zm3.05 7.95h9.2l.8-3.52-2.65 2.5-2.75-5.14-2.75 5.14-2.65-2.5.8 3.52Z"/></symbol>
+        <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 2.8 19.5 6v5.4c0 4.75-3.18 8.84-7.5 10-4.32-1.16-7.5-5.25-7.5-10V6L12 2.8Zm0 2.1L6.4 7.28v4.12c0 3.65 2.32 6.85 5.6 7.95 3.28-1.1 5.6-4.3 5.6-7.95V7.28L12 4.9Zm3.7 5.03-4.45 4.45-2.3-2.3-1.34 1.34 3.64 3.64 5.79-5.79-1.34-1.34Z"/></symbol>
+        <symbol id="icon-admin" viewBox="0 0 24 24"><path d="M12 3l7 3v5.1c0 4.22-2.95 8.13-7 9.35-4.05-1.22-7-5.13-7-9.35V6l7-3Zm0 2.1L6.9 7.3v3.8c0 3.2 2.08 6.25 5.1 7.34 3.02-1.09 5.1-4.14 5.1-7.34V7.3L12 5.1Zm0 3.15a2.25 2.25 0 1 1 0 4.5 2.25 2.25 0 0 1 0-4.5Zm0 5.55c2.05 0 3.58.92 4.05 2.45H7.95c.47-1.53 2-2.45 4.05-2.45Z"/></symbol>
+        <symbol id="icon-chart" viewBox="0 0 24 24"><path d="M4 19.5h16v1.8H4v-1.8Zm1.2-6.2h3v4.7h-3v-4.7Zm5.3-7.3h3v12h-3V6Zm5.3 3.8h3V18h-3V9.8Z"/></symbol>
+
+        <symbol id="icon-star" viewBox="0 0 24 24"><path d="M12 2.8 14.9 8.7l6.5.95-4.7 4.58 1.1 6.47L12 17.65 6.2 20.7l1.1-6.47-4.7-4.58 6.5-.95L12 2.8Z"/></symbol>
+        <symbol id="icon-comment" viewBox="0 0 24 24"><path d="M5.25 4h13.5A2.75 2.75 0 0 1 21.5 6.75v8.1a2.75 2.75 0 0 1-2.75 2.75H9.1l-4.02 3.04A.95.95 0 0 1 3.6 19.9V6.75A2.75 2.75 0 0 1 5.25 4Zm0 1.9a.85.85 0 0 0-.85.85v11.25l3.82-2.89c.17-.13.38-.2.6-.2h9.93a.85.85 0 0 0 .85-.85V6.75a.85.85 0 0 0-.85-.85H5.25Zm2.25 3.15h9v1.7h-9v-1.7Zm0 3.35h6.2v1.7H7.5v-1.7Z"/></symbol>
+
+        <symbol id="icon-heart" viewBox="0 0 24 24"><path d="M12 20.3a1.1 1.1 0 0 1-.74-.28c-1.45-1.3-2.86-2.55-4.1-3.65l-.02-.02C3.97 13.92 2 11.93 2 9.05 2 6.4 4.1 4.3 6.75 4.3c1.6 0 3.07.78 4 1.99a.42.42 0 0 0 .5 0c.93-1.21 2.4-1.99 4-1.99C17.9 4.3 20 6.4 20 9.05c0 2.88-1.97 4.87-5.14 7.3l-.02.02c-1.24 1.1-2.65 2.35-4.1 3.65a1.1 1.1 0 0 1-.74.28Z"/></symbol>
+        <symbol id="icon-bell" viewBox="0 0 24 24"><path d="M12 2.5a1 1 0 0 1 1 1v.6a6.5 6.5 0 0 1 5.25 6.38v3.4l1.55 2.58c.4.66-.08 1.5-.85 1.5H5.05c-.77 0-1.25-.84-.85-1.5L5.75 13.88v-3.4A6.5 6.5 0 0 1 11 4.1v-.6a1 1 0 0 1 1-1Zm0 18.4a2.3 2.3 0 0 1-2.29-2.05h4.58A2.3 2.3 0 0 1 12 20.9Z"/></symbol>
+        <symbol id="icon-target" viewBox="0 0 24 24"><path d="M12 2.75a9.25 9.25 0 1 0 0 18.5 9.25 9.25 0 0 0 0-18.5Zm0 2.6a6.65 6.65 0 1 1 0 13.3 6.65 6.65 0 0 1 0-13.3Zm0 2.6a4.05 4.05 0 1 0 0 8.1 4.05 4.05 0 0 0 0-8.1Zm0 2.6a1.45 1.45 0 1 1 0 2.9 1.45 1.45 0 0 1 0-2.9Z"/></symbol>
+        <symbol id="icon-sparkles" viewBox="0 0 24 24"><path d="M6.5 2.5c.3 0 .55.2.62.5l.7 2.65 2.65.7c.3.07.5.32.5.62s-.2.55-.5.62l-2.65.7-.7 2.65a.65.65 0 0 1-1.24 0l-.7-2.65-2.65-.7a.65.65 0 0 1 0-1.24l2.65-.7.7-2.65c.07-.3.32-.5.62-.5Zm10.5 5c.33 0 .62.22.7.55l1 4 4 1a.72.72 0 0 1 0 1.4l-4 1-1 4a.72.72 0 0 1-1.4 0l-1-4-4-1a.72.72 0 0 1 0-1.4l4-1 1-4c.08-.33.37-.55.7-.55Zm-9 8.2c.27 0 .5.18.58.44l.5 1.7 1.7.5a.6.6 0 0 1 0 1.16l-1.7.5-.5 1.7a.6.6 0 0 1-1.16 0l-.5-1.7-1.7-.5a.6.6 0 0 1 0-1.16l1.7-.5.5-1.7c.08-.26.31-.44.58-.44Z"/></symbol>
+        <symbol id="icon-robot" viewBox="0 0 24 24"><path d="M11 2.75a1 1 0 0 1 2 0v1.4a6.25 6.25 0 0 1 5 6.12v.18a2.25 2.25 0 0 1 1.75 2.2v2.6a2.25 2.25 0 0 1-2.25 2.25h-.2a6.27 6.27 0 0 1-5.55 3.3h-.5a6.27 6.27 0 0 1-5.55-3.3h-.2A2.25 2.25 0 0 1 3.25 15.2v-2.6c0-1.07.74-1.97 1.75-2.2v-.18a6.25 6.25 0 0 1 5-6.12v-1.4ZM9.1 12.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm5.8 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/></symbol>
+        <symbol id="icon-send" viewBox="0 0 24 24"><path d="M3.4 3.34a.95.95 0 0 1 1.02-.16l16.6 7.4a.95.95 0 0 1 0 1.74l-16.6 7.4a.95.95 0 0 1-1.33-1.07l1.97-6.66H12a.95.95 0 1 0 0-1.9H5.06L3.1 4.43a.95.95 0 0 1 .3-1.09Z"/></symbol>
+        <symbol id="icon-clock" viewBox="0 0 24 24"><path d="M12 2.75a9.25 9.25 0 1 0 0 18.5 9.25 9.25 0 0 0 0-18.5Zm.95 4.5v5l4.1 2.45-.66 1.65L11 13.4V7.25h1.95Z"/></symbol>
+        <symbol id="icon-trophy" viewBox="0 0 24 24"><path d="M7 3h10v2h2.5a1.5 1.5 0 0 1 1.5 1.5c0 2.6-1.6 4.7-4 5.3-.7 1.7-2.2 3-4 3.36V17h2.5v2h-7v-2H10v-2.84c-1.8-.36-3.3-1.66-4-3.36-2.4-.6-4-2.7-4-5.3A1.5 1.5 0 0 1 3.5 5H6V3Zm-1 4H3.5c.12 1.3.95 2.4 2.1 2.86A8.6 8.6 0 0 1 6 8V7Zm12 0v1c0 .35-.02.66-.06.96A3.46 3.46 0 0 0 20.5 5.5H18Z"/></symbol>
+    </svg>
+
+    <div class="ai-chat-launcher-wrap">
+        <button class="chat-launcher" type="button" id="chatLauncher" aria-label="AI yordamchini ochish">
+            <svg><use href="#icon-robot"></use></svg>
+        </button>
+    </div>
+
+    <aside class="ai-chat-panel" id="chatPanel" aria-hidden="true">
+        <header class="ai-chat-head">
+            <div class="ai-chat-head-info">
+                <span class="ai-chat-avatar"><svg><use href="#icon-robot"></use></svg></span>
+                <div>
+                    <strong>KitobX AI</strong>
+                    <small>Kitob bo'yicha yordamchi</small>
+                </div>
+            </div>
+            <button type="button" class="header-icon-btn" id="chatClose" aria-label="Yopish"><svg><use href="#icon-x"></use></svg></button>
+        </header>
+        <div class="ai-chat-body" id="chatBody">
+            <div class="ai-msg ai-msg-bot">
+                <span class="ai-msg-icon"><svg><use href="#icon-sparkles"></use></svg></span>
+                <div class="ai-msg-bubble">Salom! Men KitobX AI yordamchisiman. Kitob qidirish, tavsiya olish yoki VIP haqida so'rang. 🤖</div>
+            </div>
+        </div>
+        <form class="ai-chat-form" id="chatForm">
+            <input type="text" id="chatInput" placeholder="Xabar yozing..." autocomplete="off" maxlength="500">
+            <button type="submit" class="header-icon-btn" aria-label="Yuborish"><svg><use href="#icon-send"></use></svg></button>
+        </form>
+    </aside>
+
+    <div class="app-shell">
+        <header class="site-header" data-reveal>
+            <a href="{% url 'book_list' %}" class="brand" aria-label="KitobX bosh sahifa">
+                <span class="brand-mark"><svg><use href="#icon-library"></use></svg></span>
+                <span class="brand-copy"><strong>KitobX</strong><small>Reading platform</small></span>
+            </a>
+
+            <button class="menu-toggle" type="button" aria-label="Menyuni ochish" aria-expanded="false">
+                <svg><use href="#icon-menu"></use></svg>
+            </button>
+
+            <nav class="nav-links" aria-label="Asosiy navigatsiya">
+                <a href="{% url 'book_list' %}"><svg><use href="#icon-home"></use></svg><span>Katalog</span></a>
+                <a href="{% url 'recommendations' %}"><svg><use href="#icon-sparkles"></use></svg><span>AI tavsiya</span></a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'wishlist' %}"><svg><use href="#icon-heart"></use></svg><span>Wishlist</span></a>
+                {% endif %}
+                <a href="{% url 'vip_plans' %}"><svg><use href="#icon-crown"></use></svg><span>VIP</span></a>
+                {% if user.is_staff %}
+                    <a href="{% url 'book_create' %}"><svg><use href="#icon-plus"></use></svg><span>Kitob qo'shish</span></a>
+                    <a href="/admin/"><svg><use href="#icon-admin"></use></svg><span>Admin</span></a>
+                {% endif %}
+                {% if user.is_authenticated %}
+                    <a href="{% url 'profile' %}" class="profile-nav-link">
+                        <span class="nav-avatar">
+                            {% if user.profile.avatar %}
+                                <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}">
+                            {% else %}
+                                <svg><use href="#icon-user"></use></svg>
+                            {% endif %}
+                        </span>
+                        <span>Profil</span>
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}"><svg><use href="#icon-log-in"></use></svg><span>Kirish</span></a>
+                    <a href="{% url 'register' %}"><svg><use href="#icon-user-plus"></use></svg><span>Ro'yxatdan o'tish</span></a>
+                {% endif %}
+            </nav>
+
+            <div class="header-actions">
+                {% if user.is_authenticated %}
+                    {% if user.profile.is_vip_active %}<span class="vip-chip"><svg><use href="#icon-crown"></use></svg>VIP</span>{% endif %}
+                    <div class="notif-wrap">
+                        <button class="header-icon-btn notif-toggle" type="button" id="notifToggle" aria-label="Bildirishnomalar" aria-expanded="false">
+                            <svg><use href="#icon-bell"></use></svg>
+                            {% if nav_unread_count > 0 %}<span class="notif-dot">{{ nav_unread_count }}</span>{% endif %}
+                        </button>
+                        <div class="notif-dropdown" id="notifDropdown">
+                            <div class="notif-dropdown-head">
+                                <strong>Bildirishnomalar</strong>
+                                {% if nav_unread_count > 0 %}
+                                    <button type="button" class="notif-mark-all" id="notifMarkAll">Barchasini o'qish</button>
+                                {% endif %}
+                            </div>
+                            <div class="notif-list">
+                                {% for n in nav_notifications %}
+                                    <a href="{{ n.link|default:'#' }}" class="notif-item {% if not n.is_read %}unread{% endif %}">
+                                        <span class="notif-icon"><svg><use href="#icon-{{ n.icon }}"></use></svg></span>
+                                        <span class="notif-text">
+                                            <strong>{{ n.title }}</strong>
+                                            <small>{{ n.message }}</small>
+                                            <small class="notif-time">{{ n.created_at|date:"d.m.Y H:i" }}</small>
+                                        </span>
+                                    </a>
+                                {% empty %}
+                                    <div class="notif-empty"><svg><use href="#icon-bell"></use></svg><span>Bildirishnomalar yo'q</span></div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <form action="{% url 'logout' %}" method="post" class="logout-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="header-icon-btn" aria-label="Tizimdan chiqish"><svg><use href="#icon-log-out"></use></svg></button>
+                    </form>
+                {% endif %}
+                <button class="theme-toggle" type="button" aria-label="Rang rejimini almashtirish" aria-pressed="false">
+                    <svg class="theme-icon-sun"><use href="#icon-sun"></use></svg>
+                    <svg class="theme-icon-moon"><use href="#icon-moon"></use></svg>
+                </button>
+            </div>
+        </header>
+
+        {% if messages %}
+            <section class="messages" aria-live="polite" data-reveal>
+                {% for message in messages %}
+                    <div class="message message-{{ message.tags }}">
+                        <svg><use href="{% if message.tags == 'success' %}#icon-check{% elif message.tags == 'error' or message.tags == 'warning' %}#icon-alert{% else %}#icon-info{% endif %}"></use></svg>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            </section>
+        {% endif %}
+
+        <main class="container">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="site-footer" data-reveal>
+            <span>KitobX — PDF o'qish, VIP yuklab olish va Django admin boshqaruvi.</span>
+            {% if user.is_staff %}
+                <a href="/admin/"><svg><use href="#icon-admin"></use></svg><span>Admin panel</span></a>
+            {% else %}
+                <a href="{% url 'book_list' %}"><svg><use href="#icon-library"></use></svg><span>Katalog</span></a>
+            {% endif %}
+        </footer>
+    </div>
+
+    <script src="{% static 'books/js/app.js' %}?v=3" defer></script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+{% extends 'books/base.html' %}
+
+{% block title %}{{ book.title }} — KitobX{% endblock %}
+
+{% block content %}
+<article class="book-showcase" data-reveal>
+    <div class="book-banner refined-banner">
+        {% if book.banner %}
+            <img src="{{ book.banner.url }}" alt="{{ book.title }} banneri">
+        {% elif book.cover %}
+            <img src="{{ book.cover.url }}" alt="{{ book.title }}">
+        {% endif %}
+        <div class="book-banner-overlay">
+            <a href="{% url 'book_list' %}" class="back-link light-back"><svg><use href="#icon-back"></use></svg><span>Katalog</span></a>
+            <span class="eyebrow"><svg><use href="#icon-book"></use></svg> Kitob tafsilotlari</span>
+            <h1>{{ book.title }}</h1>
+            <p>{{ book.author }}</p>
+            <div class="banner-rating-line">
+                <span class="rating-mini"><svg><use href="#icon-star"></use></svg>{{ average_rating }}/5</span>
+                <span><svg><use href="#icon-comment"></use></svg>{{ reviews_count }} ta izoh</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-layout detail-layout-final">
+        <aside class="detail-cover-card">
+            {% if book.card_image %}
+                <img src="{{ book.card_image.url }}" alt="{{ book.title }}">
+            {% else %}
+                <div class="detail-placeholder"><svg><use href="#icon-image"></use></svg><span>Rasm mavjud emas</span></div>
+            {% endif %}
+            <div class="detail-quick">
+                <span><svg><use href="#icon-eye"></use></svg>{{ book.views_count }} ko'rish</span>
+                <span><svg><use href="#icon-book"></use></svg>{{ book.reads_count }} o'qish</span>
+                <span><svg><use href="#icon-download"></use></svg>{{ book.downloads_count }} yuklash</span>
+                <span><svg><use href="#icon-star"></use></svg>{{ average_rating }}/5 baho</span>
+            </div>
+        </aside>
+
+        <section class="detail-content">
+            <div class="detail-meta">
+                <span><svg><use href="#icon-calendar"></use></svg>{{ book.published_year }}</span>
+                <span><svg><use href="#icon-tag"></use></svg>{% if book.category %}{{ book.category.name }}{% else %}Kategoriyasiz{% endif %}</span>
+                <span class="good"><svg><use href="#icon-pdf"></use></svg>PDF reader</span>
+                <span><svg><use href="#icon-star"></use></svg>{{ average_rating }}/5</span>
+            </div>
+
+            <div class="read-action-panel">
+                {% if book.pdf_file %}
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'book_read' book.id %}" class="btn btn-primary"><svg><use href="#icon-book"></use></svg><span>Kitobni o'qish</span></a>
+                        {% if can_download %}
+                            <a href="{% url 'book_download' book.id %}" class="btn btn-secondary"><svg><use href="#icon-download"></use></svg><span>PDF yuklab olish</span></a>
+                        {% else %}
+                            <button class="btn btn-locked" type="button"><svg><use href="#icon-crown"></use></svg><span>Yuklab olish uchun VIP kerak</span></button>
+                        {% endif %}
+                        <button type="button" class="icon-btn wishlist-btn wishlist-btn-lg {% if book.id in nav_wishlist_ids %}active{% endif %}" data-book="{{ book.id }}" data-url="{% url 'wishlist_toggle' book.id %}" aria-label="Wishlistga qo'shish" aria-pressed="{% if book.id in nav_wishlist_ids %}true{% else %}false{% endif %}">
+                            <svg><use href="#icon-heart"></use></svg>
+                        </button>
+                    {% else %}
+                        <a href="{% url 'login' %}?next={% url 'book_read' book.id %}" class="btn btn-primary"><svg><use href="#icon-log-in"></use></svg><span>O'qish uchun kiring</span></a>
+                        <a href="{% url 'register' %}" class="btn btn-secondary"><svg><use href="#icon-user-plus"></use></svg><span>Ro'yxatdan o'tish</span></a>
+                    {% endif %}
+                {% else %}
+                    <div class="hint-card"><svg><use href="#icon-alert"></use></svg><span>Bu kitob to'liq emas: PDF yuklanmagan. Admin PDF yuklamaguncha kitob o'qishga ochilmaydi.</span></div>
+                {% endif %}
+            </div>
+
+            <div class="description-card">
+                <h2>Tavsif</h2>
+                {% if book.description %}
+                    {{ book.description|linebreaks }}
+                {% else %}
+                    <p>Bu kitob uchun tavsif kiritilmagan.</p>
+                {% endif %}
+            </div>
+
+            <section class="reviews-panel" id="reviews" data-reveal>
+                <div class="section-title reviews-head">
+                    <div>
+                        <h2>Baholar va izohlar</h2>
+                        <span><svg><use href="#icon-star"></use></svg>{{ average_rating }}/5 · {{ reviews_count }} ta fikr</span>
+                    </div>
+                </div>
+
+                <div class="review-form-card">
+                    {% if user.is_authenticated %}
+                        <form method="post" class="review-form" novalidate>
+                            {% csrf_token %}
+                            <input type="hidden" name="form_type" value="review">
+                            <div class="review-form-top">
+                                <div>
+                                    <strong>{% if user_review %}Bahongizni yangilash{% else %}Kitobga baho bering{% endif %}</strong>
+                                    <small>Har bir foydalanuvchi bitta baho va izoh qoldiradi. Keyin uni yangilashi mumkin.</small>
+                                </div>
+                                <div class="rating-choice">
+                                    {% for radio in review_form.rating %}
+                                        <label class="rating-option">
+                                            {{ radio.tag }}
+                                            <span><svg><use href="#icon-star"></use></svg>{{ radio.choice_label|slice:":1" }}</span>
+                                        </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="form-group {% if review_form.comment.errors %}has-error{% endif %}">
+                                <label for="{{ review_form.comment.id_for_label }}"><svg><use href="#icon-comment"></use></svg><span>Izoh</span></label>
+                                {{ review_form.comment }}
+                                {% for error in review_form.comment.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                            </div>
+                            {% if review_form.non_field_errors %}<div class="form-errors">{{ review_form.non_field_errors }}</div>{% endif %}
+                            {% if review_form.rating.errors %}<div class="form-errors">{{ review_form.rating.errors }}</div>{% endif %}
+                            <button type="submit" class="btn btn-primary"><svg><use href="#icon-save"></use></svg><span>Saqlash</span></button>
+                        </form>
+                    {% else %}
+                        <div class="review-login-box">
+                            <span><svg><use href="#icon-lock"></use></svg></span>
+                            <div>
+                                <strong>Baho va izoh yozish uchun hisobga kiring.</strong>
+                                <small>Kitob o'qish, baholash va izoh qoldirish profil orqali ishlaydi.</small>
+                            </div>
+                            <a href="{% url 'login' %}?next={{ request.path }}#reviews" class="btn btn-secondary"><svg><use href="#icon-log-in"></use></svg><span>Kirish</span></a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="review-list">
+                    {% for review in reviews %}
+                        <article class="review-card">
+                            <div class="review-avatar">
+                                {% if review.user.profile.avatar %}
+                                    <img src="{{ review.user.profile.avatar.url }}" alt="{{ review.user_display }}">
+                                {% else %}
+                                    <svg><use href="#icon-user"></use></svg>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div class="review-meta">
+                                    <strong>{{ review.user_display }}</strong>
+                                    <span class="review-stars">
+                                        {% for i in "12345" %}
+                                            <svg class="{% if forloop.counter <= review.rating %}active{% endif %}"><use href="#icon-star"></use></svg>
+                                        {% endfor %}
+                                    </span>
+                                </div>
+                                <p>{{ review.comment|linebreaksbr }}</p>
+                                <small>{{ review.updated_at|date:"d.m.Y H:i" }}</small>
+                            </div>
+                        </article>
+                    {% empty %}
+                        <div class="soft-empty review-empty">
+                            <span><svg><use href="#icon-comment"></use></svg></span>
+                            <p>Hali izoh yo'q. Birinchi bahoni siz qoldiring.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            {% if user.is_staff %}
+                <div class="page-actions">
+                    <a href="{% url 'book_update' book.id %}" class="btn btn-primary"><svg><use href="#icon-edit"></use></svg><span>Tahrirlash</span></a>
+                    <a href="/admin/books/book/{{ book.id }}/change/" class="btn btn-secondary"><svg><use href="#icon-admin"></use></svg><span>Admin panel</span></a>
+                    <a href="{% url 'book_delete' book.id %}" class="btn btn-danger"><svg><use href="#icon-trash"></use></svg><span>O'chirish</span></a>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+</article>
+{% endblock %}

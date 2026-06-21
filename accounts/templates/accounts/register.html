@@ -1,0 +1,43 @@
+{% extends 'books/base.html' %}
+
+{% block title %}Ro'yxatdan o'tish — KitobX{% endblock %}
+
+{% block content %}
+<section class="auth-center" data-reveal>
+    <form method="post" class="panel-form auth-form elevated compact-auth-card register-card" novalidate>
+        {% csrf_token %}
+        <a href="{% url 'book_list' %}" class="back-link"><svg><use href="#icon-back"></use></svg><span>Katalogga qaytish</span></a>
+        <div class="form-head compact-form-head">
+            <span><svg><use href="#icon-user-plus"></use></svg></span>
+            <div>
+                <h2>Ro'yxatdan o'tish</h2>
+                <p>Minimal profil yarating va PDF kitoblarni saytda o'qing.</p>
+            </div>
+        </div>
+        {% if form.non_field_errors %}
+            <div class="form-errors">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="form-grid two-cols">
+            {% for field in form %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label for="{{ field.id_for_label }}">
+                        {% if field.name == 'username' %}<svg><use href="#icon-user"></use></svg>
+                        {% elif field.name == 'email' %}<svg><use href="#icon-mail"></use></svg>
+                        {% elif field.name == 'phone' %}<svg><use href="#icon-phone"></use></svg>
+                        {% elif field.name == 'password1' or field.name == 'password2' %}<svg><use href="#icon-lock"></use></svg>
+                        {% else %}<svg><use href="#icon-edit"></use></svg>{% endif %}
+                        <span>{{ field.label }}</span>
+                    </label>
+                    {{ field }}
+                    {% if field.help_text %}<small class="help-text">{{ field.help_text }}</small>{% endif %}
+                    {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-primary full-btn"><svg><use href="#icon-user-plus"></use></svg><span>Hisob yaratish</span></button>
+        <p class="auth-switch">Hisobingiz bormi? <a href="{% url 'login' %}">Tizimga kiring</a></p>
+    </form>
+</section>
+{% endblock %}

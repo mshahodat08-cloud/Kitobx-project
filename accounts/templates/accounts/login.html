@@ -1,0 +1,38 @@
+{% extends 'books/base.html' %}
+
+{% block title %}Tizimga kirish — KitobX{% endblock %}
+
+{% block content %}
+<section class="auth-center" data-reveal>
+    <form method="post" class="panel-form auth-form elevated compact-auth-card" novalidate>
+        {% csrf_token %}
+        <a href="{% url 'book_list' %}" class="back-link"><svg><use href="#icon-back"></use></svg><span>Katalogga qaytish</span></a>
+        <div class="form-head compact-form-head">
+            <span><svg><use href="#icon-log-in"></use></svg></span>
+            <div>
+                <h2>Hisobga kirish</h2>
+                <p>Kitoblarni o'qish uchun profilingizga kiring.</p>
+            </div>
+        </div>
+        {% if form.non_field_errors %}
+            <div class="form-errors">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        {% for field in form %}
+            <div class="form-group {% if field.errors %}has-error{% endif %}">
+                <label for="{{ field.id_for_label }}">
+                    {% if field.name == 'username' %}<svg><use href="#icon-user"></use></svg>
+                    {% elif field.name == 'password' %}<svg><use href="#icon-lock"></use></svg>
+                    {% else %}<svg><use href="#icon-edit"></use></svg>{% endif %}
+                    <span>{{ field.label }}</span>
+                </label>
+                {{ field }}
+                {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary full-btn"><svg><use href="#icon-log-in"></use></svg><span>Kirish</span></button>
+        <p class="auth-switch">Hali hisobingiz yo'qmi? <a href="{% url 'register' %}">Ro'yxatdan o'ting</a></p>
+    </form>
+</section>
+{% endblock %}

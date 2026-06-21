@@ -1,0 +1,57 @@
+{% extends 'books/base.html' %}
+
+{% block title %}{{ book.title }} — O'qish{% endblock %}
+
+{% block content %}
+<section class="reader-page" data-reveal>
+    <div class="reader-topbar reader-topbar-final">
+        <a href="{% url 'book_detail' book.id %}" class="back-link"><svg><use href="#icon-back"></use></svg><span>Kitobga qaytish</span></a>
+        <div class="reader-book-head">
+            {% if book.card_image %}<img src="{{ book.card_image.url }}" alt="{{ book.title }}">{% endif %}
+            <div>
+                <span class="eyebrow"><svg><use href="#icon-pdf"></use></svg> PDF reader</span>
+                <h1>{{ book.title }}</h1>
+                <p>{{ book.author }}</p>
+            </div>
+        </div>
+        <div class="reader-actions">
+            {% if can_download %}
+                <a href="{% url 'book_download' book.id %}" class="btn btn-secondary"><svg><use href="#icon-download"></use></svg><span>Yuklab olish</span></a>
+            {% else %}
+                <span class="locked-note"><svg><use href="#icon-crown"></use></svg> Download VIP</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="progress-panel" data-reveal>
+        <div class="progress-panel-head">
+            <span class="progress-panel-icon"><svg><use href="#icon-book"></use></svg></span>
+            <div class="progress-panel-text">
+                <strong>O'qish jarayoni</strong>
+                <small>Qayerda to'xtaganingizni belgilang — progress avtomatik saqlanadi.</small>
+            </div>
+            <span class="progress-percent-badge" id="progressLabel">{{ progress.percent }}%</span>
+        </div>
+        <div class="progress-track">
+            <div class="progress-track-fill" id="progressFill" style="width:{{ progress.percent }}%"></div>
+        </div>
+        <div class="progress-panel-actions">
+            <input type="range" min="0" max="100" step="5" value="{{ progress.percent }}" id="progressSlider" data-url="{% url 'update_progress' book.id %}" aria-label="O'qish progressi">
+            {% if progress.is_completed %}
+                <button type="button" class="btn btn-secondary" id="progressFinishBtn" disabled>Tugatildi ✓</button>
+            {% else %}
+                <button type="button" class="btn btn-secondary" id="progressFinishBtn"><svg><use href="#icon-check"></use></svg><span>Tugatdim</span></button>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="reader-frame-wrap">
+        <iframe class="pdf-frame" title="{{ book.title }} PDF" src="{% url 'book_pdf_inline' book.id %}#toolbar=0&navpanes=0&scrollbar=1"></iframe>
+    </div>
+
+    <div class="reader-note">
+        <svg><use href="#icon-shield"></use></svg>
+        <span>O'qish barcha ro'yxatdan o'tgan foydalanuvchilar uchun ochiq. PDF faylni rasmiy yuklab olish faqat VIP profilga beriladi.</span>
+    </div>
+</section>
+{% endblock %}

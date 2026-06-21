@@ -1,0 +1,138 @@
+{% extends 'books/base.html' %}
+
+{% block title %}Profil — KitobX{% endblock %}
+
+{% block content %}
+<section class="profile-layout" data-reveal>
+    <aside class="profile-card">
+        <div class="avatar-box">
+            {% if profile.avatar %}
+                <img src="{{ profile.avatar.url }}" alt="{{ profile.name }}">
+            {% else %}
+                <span>{{ profile.initials }}</span>
+            {% endif %}
+        </div>
+        <span class="eyebrow"><svg><use href="#icon-user"></use></svg> Profil</span>
+        <h1>{{ profile.name }}</h1>
+        <p>@{{ request.user.username }}</p>
+        <div class="vip-status {% if profile.is_vip_active %}active{% endif %}">
+            <svg><use href="#icon-crown"></use></svg>
+            <span>{{ profile.vip_label }}</span>
+        </div>
+        <div class="profile-actions">
+            <a href="{% url 'profile_edit' %}" class="btn btn-primary"><svg><use href="#icon-edit"></use></svg><span>Profilni tahrirlash</span></a>
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-ghost"><svg><use href="#icon-log-out"></use></svg><span>Chiqish</span></button>
+            </form>
+        </div>
+    </aside>
+
+    <section class="profile-content">
+        <div class="mini-stats">
+            <article>
+                <span><svg><use href="#icon-pdf"></use></svg></span>
+                <strong>{{ pdf_books_count }}</strong>
+                <small>PDF kitoblar</small>
+            </article>
+            <article>
+                <span><svg><use href="#icon-library"></use></svg></span>
+                <strong>{{ total_books }}</strong>
+                <small>Jami kitoblar</small>
+            </article>
+            <article>
+                <span><svg><use href="#icon-eye"></use></svg></span>
+                <strong>{{ total_views }}</strong>
+                <small>Jami ko'rishlar</small>
+            </article>
+        </div>
+
+        <div class="section-title">
+            <h2>Premium imkoniyatlar</h2>
+        </div>
+        <div class="premium-quick-grid">
+            <a href="{% url 'wishlist' %}" class="premium-quick-card">
+                <span class="premium-quick-icon"><svg><use href="#icon-heart"></use></svg></span>
+                <strong>{{ wishlist_count }}</strong>
+                <small>Wishlist</small>
+            </a>
+            <a href="{% url 'reading_history' %}" class="premium-quick-card">
+                <span class="premium-quick-icon"><svg><use href="#icon-clock"></use></svg></span>
+                <strong>{{ completed_books_count }}</strong>
+                <small>Tugatilgan kitoblar</small>
+            </a>
+            <a href="{% url 'challenge' %}" class="premium-quick-card">
+                <span class="premium-quick-icon"><svg><use href="#icon-target"></use></svg></span>
+                <strong>{{ challenge.progress_percent }}%</strong>
+                <small>Reading Challenge</small>
+            </a>
+            <a href="{% url 'recommendations' %}" class="premium-quick-card">
+                <span class="premium-quick-icon"><svg><use href="#icon-sparkles"></use></svg></span>
+                <strong>AI</strong>
+                <small>Tavsiyalar</small>
+            </a>
+            <a href="{% url 'vip_plans' %}" class="premium-quick-card {% if profile.is_vip_active %}is-vip{% endif %}">
+                <span class="premium-quick-icon"><svg><use href="#icon-crown"></use></svg></span>
+                <strong>{% if profile.is_vip_active %}Faol{% else %}VIP{% endif %}</strong>
+                <small>Obuna</small>
+            </a>
+            <a href="{% url 'notifications' %}" class="premium-quick-card">
+                <span class="premium-quick-icon"><svg><use href="#icon-bell"></use></svg></span>
+                <strong>{{ nav_unread_count }}</strong>
+                <small>Bildirishnoma</small>
+            </a>
+        </div>
+
+        {% if vip_required %}
+            <div class="vip-upgrade-panel">
+                <div>
+                    <span class="eyebrow"><svg><use href="#icon-crown"></use></svg> VIP kerak</span>
+                    <h2>PDF fayllarni yuklab olish VIP uchun ochiladi.</h2>
+                    <p>VIP rejaga o'tib, barcha kitoblarni cheklovsiz yuklab olish, reklamasiz o'qish va AI tavsiyalardan to'liq foydalanish imkoniga ega bo'ling.</p>
+                </div>
+                <a href="{% url 'vip_plans' %}" class="btn btn-primary"><svg><use href="#icon-crown"></use></svg><span>VIP rejalarni ko'rish</span></a>
+            </div>
+        {% endif %}
+
+        <div class="info-panel">
+            <div class="section-title">
+                <h2>Profil ma'lumotlari</h2>
+                <a href="{% url 'profile_edit' %}"><svg><use href="#icon-edit"></use></svg><span>Tahrirlash</span></a>
+            </div>
+            <dl class="info-list">
+                <div><dt>Ism</dt><dd>{{ request.user.first_name|default:"Kiritilmagan" }}</dd></div>
+                <div><dt>Familiya</dt><dd>{{ request.user.last_name|default:"Kiritilmagan" }}</dd></div>
+                <div><dt>Email</dt><dd>{{ request.user.email|default:"Kiritilmagan" }}</dd></div>
+                <div><dt>Telefon</dt><dd>{{ profile.phone|default:"Kiritilmagan" }}</dd></div>
+                <div><dt>Qo'shilgan sana</dt><dd>{{ request.user.date_joined|date:"d.m.Y H:i" }}</dd></div>
+                <div><dt>Bio</dt><dd>{{ profile.bio|default:"Kiritilmagan" }}</dd></div>
+            </dl>
+        </div>
+
+        {% if user.is_staff %}
+        <div class="info-panel">
+            <div class="section-title">
+                <h2>Admin kontentim</h2>
+                <a href="{% url 'book_create' %}"><svg><use href="#icon-plus"></use></svg><span>Yangi kitob</span></a>
+            </div>
+            {% if my_books %}
+                <div class="compact-book-list">
+                    {% for book in my_books %}
+                        <a href="{% url 'book_detail' book.id %}">
+                            <span class="compact-icon"><svg><use href="#icon-book"></use></svg></span>
+                            <span><strong>{{ book.title }}</strong><small>{{ book.author }}</small></span>
+                            <svg><use href="#icon-arrow"></use></svg>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="soft-empty">
+                    <p>Hali siz qo'shgan kitob yo'q.</p>
+                    <a href="{% url 'book_create' %}" class="btn btn-secondary"><svg><use href="#icon-plus"></use></svg><span>Kitob qo'shish</span></a>
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+</section>
+{% endblock %}

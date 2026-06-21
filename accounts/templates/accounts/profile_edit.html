@@ -1,0 +1,64 @@
+{% extends 'books/base.html' %}
+
+{% block title %}Profilni tahrirlash — KitobX{% endblock %}
+
+{% block content %}
+<section class="form-layout profile-edit-layout" data-reveal>
+    <aside class="form-aside profile-edit-aside">
+        <a href="{% url 'profile' %}" class="back-link"><svg><use href="#icon-back"></use></svg><span>Profilga qaytish</span></a>
+        <div class="avatar-box small-avatar">
+            {% if profile.avatar %}
+                <img src="{{ profile.avatar.url }}" alt="{{ profile.name }}">
+            {% else %}
+                <span>{{ profile.initials }}</span>
+            {% endif %}
+        </div>
+        <span class="eyebrow"><svg><use href="#icon-edit"></use></svg> Profil sozlamalari</span>
+        <h1>Profilingizni chiroyli va aniq qiling.</h1>
+        <p>Ism, email, telefon, bio va profil rasmi foydalanuvchi panelida ko'rinadi. VIP status esa faqat admin panelda beriladi.</p>
+        <div class="hint-card"><svg><use href="#icon-crown"></use></svg><span>{{ profile.vip_label }}</span></div>
+    </aside>
+
+    <form method="post" enctype="multipart/form-data" class="panel-form book-form elevated" novalidate>
+        {% csrf_token %}
+        {% if user_form.non_field_errors or profile_form.non_field_errors %}
+            <div class="form-errors">{{ user_form.non_field_errors }}{{ profile_form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="form-section-label">Asosiy ma'lumotlar</div>
+        <div class="form-grid two-cols">
+            {% for field in user_form %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label for="{{ field.id_for_label }}">
+                        {% if field.name == 'email' %}<svg><use href="#icon-mail"></use></svg>
+                        {% else %}<svg><use href="#icon-user"></use></svg>{% endif %}
+                        <span>{{ field.label }}</span>
+                    </label>
+                    {{ field }}
+                    {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="form-section-label">Profil ko'rinishi</div>
+        {% for field in profile_form %}
+            <div class="form-group {% if field.errors %}has-error{% endif %}">
+                <label for="{{ field.id_for_label }}">
+                    {% if field.name == 'phone' %}<svg><use href="#icon-phone"></use></svg>
+                    {% elif field.name == 'avatar' %}<svg><use href="#icon-image"></use></svg>
+                    {% elif field.name == 'bio' %}<svg><use href="#icon-info"></use></svg>
+                    {% else %}<svg><use href="#icon-edit"></use></svg>{% endif %}
+                    <span>{{ field.label }}</span>
+                </label>
+                {{ field }}
+                {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+        {% endfor %}
+
+        <div class="page-actions">
+            <button class="btn btn-primary" type="submit"><svg><use href="#icon-save"></use></svg><span>Saqlash</span></button>
+            <a href="{% url 'profile' %}" class="btn btn-ghost"><svg><use href="#icon-x"></use></svg><span>Bekor qilish</span></a>
+        </div>
+    </form>
+</section>
+{% endblock %}
