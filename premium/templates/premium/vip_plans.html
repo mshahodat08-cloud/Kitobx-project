@@ -1,0 +1,125 @@
+{% extends 'books/base.html' %}
+
+{% block title %}VIP obuna — KitobX{% endblock %}
+
+{% block content %}
+<section class="catalog-head vip-head" data-reveal>
+    <div>
+        <span class="eyebrow"><svg><use href="#icon-crown"></use></svg> VIP Subscription</span>
+        <h1>Cheksiz imkoniyatlar uchun VIP bo'ling</h1>
+        <p>Barcha kitoblarni PDF formatda yuklab oling, AI tavsiyalardan to'liq foydalaning va o'qish tajribangizni yangi darajaga olib chiqing.</p>
+    </div>
+</section>
+
+<section class="vip-plans-grid" data-reveal>
+    {% for plan in plans %}
+        <article class="vip-plan-card {% if plan.is_popular %}popular{% endif %}">
+            {% if plan.is_popular %}<span class="vip-popular-badge"><svg><use href="#icon-star"></use></svg>Eng mashhur</span>{% endif %}
+            <div class="vip-plan-head">
+                <span class="vip-plan-icon"><svg><use href="#icon-crown"></use></svg></span>
+                <h3>{{ plan.name }}</h3>
+                <p>{{ plan.tagline }}</p>
+            </div>
+            <div class="vip-plan-price">
+                <strong>{{ plan.price|floatformat:0 }}</strong>
+                <span>so'm {% if plan.duration_days %}/ {{ plan.duration_days }} kun{% else %}/ umrbod{% endif %}</span>
+            </div>
+            <ul class="vip-feature-list">
+                {% for feature in plan.feature_list %}
+                    <li><svg><use href="#icon-check"></use></svg><span>{{ feature }}</span></li>
+                {% endfor %}
+            </ul>
+            {% if user.is_authenticated %}
+                <button type="button"
+                        class="btn {% if plan.is_popular %}btn-primary{% else %}btn-secondary{% endif %} full-btn vip-subscribe-btn"
+                        data-url="{% url 'vip_subscribe' plan.slug %}"
+                        data-plan-name="{{ plan.name }}"
+                        data-plan-price="{{ plan.price|floatformat:0 }} so'm{% if plan.duration_days %} / {{ plan.duration_days }} kun{% else %} / umrbod{% endif %}">
+                    <svg><use href="#icon-crown"></use></svg><span>Tanlash</span>
+                </button>
+            {% else %}
+                <a href="{% url 'login' %}?next={% url 'vip_plans' %}" class="btn btn-secondary full-btn">
+                    <svg><use href="#icon-log-in"></use></svg><span>Kirib tanlash</span>
+                </a>
+            {% endif %}
+        </article>
+    {% endfor %}
+</section>
+
+{% if user.is_authenticated and user.profile.is_vip_active %}
+    <section class="vip-status-banner" data-reveal>
+        <svg><use href="#icon-crown"></use></svg>
+        <div>
+            <strong>VIP faol</strong>
+            <span>{{ user.profile.vip_label }}</span>
+        </div>
+    </section>
+{% endif %}
+
+{% if transactions %}
+<section class="section-title" data-reveal>
+    <h2>To'lovlar tarixi</h2>
+</section>
+<section class="compact-book-list" data-reveal>
+    {% for tx in transactions %}
+        <div class="compact-book-list-row">
+            <span class="compact-icon"><svg><use href="#icon-crown"></use></svg></span>
+            <span><strong>{{ tx.plan.name|default:"VIP reja" }}</strong><small>{{ tx.created_at|date:"d.m.Y H:i" }} · {{ tx.amount|floatformat:0 }} so'm</small></span>
+            <span class="kx-admin-badge kx-green">{{ tx.get_status_display }}</span>
+        </div>
+    {% endfor %}
+</section>
+{% endif %}
+
+{% if user.is_authenticated %}
+<div class="kx-modal-overlay" id="vipPaymentModal" aria-hidden="true">
+    <div class="kx-modal" role="dialog" aria-modal="true" aria-labelledby="vipModalTitle">
+        <button type="button" class="kx-modal-close" id="vipModalClose" aria-label="Yopish"><svg><use href="#icon-x"></use></svg></button>
+
+        <form id="vipPaymentForm" class="kx-modal-body">
+            <div class="kx-modal-head">
+                <span class="kx-modal-icon"><svg><use href="#icon-crown"></use></svg></span>
+                <div>
+                    <strong id="vipModalTitle">To'lov ma'lumotlari</strong>
+                    <small><span id="vipModalPlanName">VIP reja</span> — <span id="vipModalPlanPrice"></span></small>
+                </div>
+            </div>
+
+            <div class="kx-modal-error" id="vipModalError" role="alert"></div>
+
+            <label class="form-group">
+                <span>Karta raqami</span>
+                <input type="text" id="vipCardNumber" inputmode="numeric" placeholder="0000 0000 0000 0000" autocomplete="cc-number" required>
+            </label>
+            <div class="two-cols">
+                <label class="form-group">
+                    <span>Amal qilish muddati</span>
+                    <input type="text" id="vipCardExpiry" inputmode="numeric" placeholder="OO/YY" autocomplete="cc-exp" required>
+                </label>
+                <label class="form-group">
+                    <span>CVV</span>
+                    <input type="text" id="vipCardCvv" inputmode="numeric" placeholder="123" autocomplete="cc-csc" required>
+                </label>
+            </div>
+            <label class="form-group">
+                <span>Karta egasining ismi</span>
+                <input type="text" id="vipCardName" placeholder="ISMI FAMILIYASI" autocomplete="cc-name" required>
+            </label>
+
+            <p class="kx-modal-hint"><svg><use href="#icon-shield"></use></svg>Bu — demo to'lov oqimi. Haqiqiy bank tizimiga ulanmaydi, karta ma'lumotlari hech qayerda saqlanmaydi.</p>
+
+            <div class="kx-modal-actions">
+                <button type="button" class="btn btn-ghost" id="vipModalCancel">Bekor qilish</button>
+                <button type="submit" class="btn btn-primary" id="vipModalSubmit"><svg><use href="#icon-crown"></use></svg><span>To'lash va faollashtirish</span></button>
+            </div>
+        </form>
+
+        <div class="kx-modal-success" id="vipModalSuccess">
+            <span class="kx-modal-success-icon"><svg><use href="#icon-check"></use></svg></span>
+            <strong>To'lov muvaffaqiyatli!</strong>
+            <p>VIP reja faollashtirildi. Sahifa yangilanmoqda...</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

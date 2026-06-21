@@ -1,0 +1,63 @@
+{% extends 'books/base.html' %}
+
+{% block title %}AI tavsiyalar — KitobX{% endblock %}
+
+{% block content %}
+<section class="catalog-head ai-head" data-reveal>
+    <div>
+        <span class="eyebrow"><svg><use href="#icon-sparkles"></use></svg> AI Recommendation</span>
+        <h1>Siz uchun tanlangan kitoblar</h1>
+        <p>
+            {% if user.is_authenticated %}
+                O'qish tarixingiz, wishlist va baholaringiz asosida sun'iy intellekt yordamida tanlangan kitoblar.
+            {% else %}
+                Eng mashhur va yuqori baholangan kitoblar. Tizimga kiring — tavsiyalar shaxsiylashtiriladi.
+            {% endif %}
+        </p>
+    </div>
+</section>
+
+{% if recommendations %}
+    <section class="book-grid" aria-label="Tavsiya etilgan kitoblar">
+        {% for book in recommendations %}
+            <article class="book-card reco-card" data-reveal>
+                <a href="{% url 'book_detail' book.id %}" class="cover-link" aria-label="{{ book.title }} haqida batafsil">
+                    {% if book.card_image %}
+                        <img src="{{ book.card_image.url }}" alt="{{ book.title }}" class="cover" loading="lazy">
+                    {% else %}
+                        <span class="cover-placeholder"><svg><use href="#icon-image"></use></svg><small>Rasm yo'q</small></span>
+                    {% endif %}
+                    <span class="pdf-badge ai-badge"><svg><use href="#icon-sparkles"></use></svg>AI</span>
+                </a>
+                <div class="card-content">
+                    <div class="pill-line"><svg><use href="#icon-tag"></use></svg><span>{% if book.category %}{{ book.category.name }}{% else %}Kategoriyasiz{% endif %}</span></div>
+                    <h3><a href="{% url 'book_detail' book.id %}">{{ book.title }}</a></h3>
+                    <p class="muted-line"><svg><use href="#icon-user"></use></svg><span>{{ book.author }}</span></p>
+                    <p class="reco-reason"><svg><use href="#icon-sparkles"></use></svg>{{ book.reco_reason }}</p>
+                    <div class="card-meta">
+                        <span><svg><use href="#icon-star"></use></svg>{{ book.avg_rating|default:"0"|floatformat:1 }}</span>
+                        <span><svg><use href="#icon-eye"></use></svg>{{ book.views_count }}</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'book_read' book.id %}" class="btn btn-small btn-primary"><span>O'qish</span><svg><use href="#icon-arrow"></use></svg></a>
+                        <button type="button" class="icon-btn wishlist-btn {% if book.id in nav_wishlist_ids %}active{% endif %}" data-book="{{ book.id }}" data-url="{% url 'wishlist_toggle' book.id %}" aria-label="Wishlistga qo'shish">
+                            <svg><use href="#icon-heart"></use></svg>
+                        </button>
+                    {% else %}
+                        <a href="{% url 'login' %}?next={% url 'book_read' book.id %}" class="btn btn-small btn-primary"><span>O'qish</span><svg><use href="#icon-lock"></use></svg></a>
+                    {% endif %}
+                </div>
+            </article>
+        {% endfor %}
+    </section>
+{% else %}
+    <section class="empty-state" data-reveal>
+        <span class="empty-icon"><svg><use href="#icon-sparkles"></use></svg></span>
+        <h3>Hozircha tavsiya yo'q</h3>
+        <p>Katalogdan kitoblarni o'qib yoki wishlistga qo'shib ko'ring — AI tavsiyalar shakllana boshlaydi.</p>
+        <a href="{% url 'book_list' %}" class="btn btn-primary"><svg><use href="#icon-library"></use></svg><span>Katalogga o'tish</span></a>
+    </section>
+{% endif %}
+{% endblock %}

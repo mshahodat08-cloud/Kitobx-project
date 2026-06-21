@@ -1,0 +1,113 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static admin_stats %}
+
+{% block content %}
+{% admin_total_books as total_books %}
+{% admin_total_categories as total_categories %}
+{% admin_total_users as total_users %}
+{% admin_active_users as active_users %}
+{% admin_total_views as total_views %}
+{% admin_total_reads as total_reads %}
+{% admin_total_downloads as total_downloads %}
+{% admin_total_reviews as total_reviews %}
+{% admin_pdf_books as pdf_books %}
+{% admin_vip_users as vip_users %}
+{% admin_percent pdf_books total_books as pdf_percent %}
+{% admin_percent vip_users total_users as vip_percent %}
+{% admin_percent active_users total_users as active_percent %}
+{% admin_latest_books 5 as latest_books %}
+{% admin_latest_users 5 as latest_users %}
+{% admin_top_categories 5 as top_categories %}
+
+<section class="kx-admin-board">
+    <div class="kx-admin-topline">
+        <div>
+            <span class="kx-eyebrow">KitobX boshqaruv markazi</span>
+            <h1>Sayt holati</h1>
+            <p>Bu sahifada faqat asosiy boshqaruv bor: foydalanuvchilar, VIP, kitoblar, kategoriyalar, o'qish va izohlar.</p>
+        </div>
+        <div class="kx-admin-quick-actions">
+            <a href="{% url 'admin:auth_user_changelist' %}">Userlar</a>
+            <a href="{% url 'admin:books_book_changelist' %}">Kitoblar</a>
+            <a href="{% url 'admin:books_category_changelist' %}">Kategoriyalar</a>
+            <a href="{% url 'admin:books_book_add' %}">Kitob qo'shish</a>
+        </div>
+    </div>
+
+    <div class="kx-circle-grid" aria-label="Sayt statistikasi">
+        <a class="kx-circle-card" href="{% url 'admin:auth_user_changelist' %}" style="--value:{{ active_percent }}">
+            <span class="kx-circle-ring"><strong>{{ total_users }}</strong><small>User</small></span>
+            <b>Foydalanuvchilar</b>
+            <em>{{ active_users }} aktiv user</em>
+        </a>
+        <a class="kx-circle-card" href="{% url 'admin:auth_user_changelist' %}?profile__is_vip__exact=1" style="--value:{{ vip_percent }}">
+            <span class="kx-circle-ring"><strong>{{ vip_users }}</strong><small>VIP</small></span>
+            <b>VIP userlar</b>
+            <em>PDF download huquqi</em>
+        </a>
+        <a class="kx-circle-card" href="{% url 'admin:books_book_changelist' %}" style="--value:{{ pdf_percent }}">
+            <span class="kx-circle-ring"><strong>{{ pdf_books }}</strong><small>PDF</small></span>
+            <b>O'qishga tayyor</b>
+            <em>{{ total_books }} kitobdan PDF bor</em>
+        </a>
+        <a class="kx-circle-card" href="{% url 'admin:books_bookreview_changelist' %}" style="--value:76">
+            <span class="kx-circle-ring"><strong>{{ total_reviews }}</strong><small>Izoh</small></span>
+            <b>Baholar</b>
+            <em>5 yulduzli fikrlar</em>
+        </a>
+    </div>
+
+    <div class="kx-simple-stats">
+        <article><span>Ko'rishlar</span><strong>{{ total_views }}</strong></article>
+        <article><span>O'qishlar</span><strong>{{ total_reads }}</strong></article>
+        <article><span>VIP yuklashlar</span><strong>{{ total_downloads }}</strong></article>
+        <article><span>Kategoriyalar</span><strong>{{ total_categories }}</strong></article>
+    </div>
+
+    <section class="kx-admin-sections">
+        <article class="kx-section-card kx-admin-section-main">
+            <div class="kx-section-head">
+                <div><span class="kx-eyebrow">Userlar</span><h2>Foydalanuvchilar va VIP</h2></div>
+                <a href="{% url 'admin:auth_user_changelist' %}">Ochish</a>
+            </div>
+            <p>User ma'lumotlari tahrirlanmaydi. VIP qilish uchun Userlar bo'limiga kiring va har bir user qatoridagi <b>VIP berish</b> tugmasini bosing yoki bir nechta userni tanlab action orqali VIP bering.</p>
+            <div class="kx-admin-howto">
+                <span>1. Userlar bo'limi</span>
+                <span>2. Userni tanlash</span>
+                <span>3. VIP berish / VIPni olish</span>
+            </div>
+            <div class="kx-mini-list">
+                {% for item in latest_users %}
+                    <a class="kx-mini-item" href="{% url 'admin:auth_user_change' item.pk %}"><span class="kx-mini-title">{{ item.get_full_name|default:item.username }}</span><small>{{ item.username }} · {{ item.date_joined|date:"d.m.Y H:i" }}</small></a>
+                {% empty %}<div class="kx-empty">Hali user yo'q.</div>{% endfor %}
+            </div>
+        </article>
+
+        <article class="kx-section-card">
+            <div class="kx-section-head">
+                <div><span class="kx-eyebrow">Kitoblar</span><h2>Kitob boshqaruvi</h2></div>
+                <a href="{% url 'admin:books_book_changelist' %}">Ochish</a>
+            </div>
+            <p>Admin kitob qo'shadi, tahrirlaydi va o'chiradi. Banner va PDF majburiy. Oddiy user faqat reader orqali o'qiydi.</p>
+            <div class="kx-mini-list">
+                {% for book in latest_books %}
+                    <a class="kx-mini-item" href="{% url 'admin:books_book_change' book.pk %}"><span class="kx-mini-title">{{ book.title }}</span><small>{{ book.author }} · {% if book.pdf_file %}PDF tayyor{% else %}PDF yo'q{% endif %}</small></a>
+                {% empty %}<div class="kx-empty">Hali kitob yo'q.</div>{% endfor %}
+            </div>
+        </article>
+
+        <article class="kx-section-card">
+            <div class="kx-section-head">
+                <div><span class="kx-eyebrow">Kategoriyalar</span><h2>Bo'limlar</h2></div>
+                <a href="{% url 'admin:books_category_changelist' %}">Ochish</a>
+            </div>
+            <p>Katalog tartibli bo'lishi uchun kategoriyalarni alohida boshqaring: qo'shish, tahrirlash va o'chirish.</p>
+            <div class="kx-mini-list">
+                {% for category in top_categories %}
+                    <a class="kx-mini-item" href="{% url 'admin:books_category_change' category.pk %}"><span class="kx-mini-title">{{ category.name }}</span><small>{{ category.total_books }} ta kitob</small></a>
+                {% empty %}<div class="kx-empty">Kategoriya yo'q.</div>{% endfor %}
+            </div>
+        </article>
+    </section>
+</section>
+{% endblock %}

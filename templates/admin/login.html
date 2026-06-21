@@ -1,0 +1,42 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block bodyclass %}{{ block.super }} login kx-admin-login-page{% endblock %}
+
+{% block content %}
+<div class="kx-login-shell compact-admin-login">
+    <form action="{{ app_path }}" method="post" id="login-form" class="kx-login-form" novalidate>
+        {% csrf_token %}
+        <div class="kx-form-head">
+            <strong>KitobX Admin</strong>
+            <small>Username, parol va admin access code bilan kiring.</small>
+        </div>
+        {% if form.errors and not form.non_field_errors %}
+            <div class="kx-form-error">Ma'lumotlarni tekshirib qayta kiriting.</div>
+        {% endif %}
+        {% if form.non_field_errors %}
+            <div class="kx-form-error">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="form-row">
+            {{ form.username.label_tag }}
+            {{ form.username }}
+            {{ form.username.errors }}
+        </div>
+        <div class="form-row">
+            {{ form.password.label_tag }}
+            {{ form.password }}
+            {{ form.password.errors }}
+            <input type="hidden" name="next" value="{% firstof next '/admin/' %}">
+        </div>
+        <div class="form-row">
+            {{ form.admin_code.label_tag }}
+            {{ form.admin_code }}
+            {{ form.admin_code.errors }}
+        </div>
+        <div class="kx-hp">{{ form.website }}</div>
+        <div class="submit-row">
+            <input type="submit" value="Admin panelga kirish">
+        </div>
+    </form>
+</div>
+{% endblock %}

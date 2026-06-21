@@ -1,0 +1,62 @@
+{% extends 'books/base.html' %}
+
+{% block title %}O'qish tarixi — KitobX{% endblock %}
+
+{% block content %}
+<section class="catalog-head" data-reveal>
+    <div>
+        <span class="eyebrow"><svg><use href="#icon-clock"></use></svg> Tarix</span>
+        <h1>O'qish tarixi</h1>
+        <p>Qaysi kitoblarni qachon boshlaganingiz, davom ettirganingiz va tugatganingiz shu yerda saqlanadi.</p>
+    </div>
+    <div class="history-quick-links">
+        <a href="{% url 'challenge' %}" class="btn btn-secondary"><svg><use href="#icon-target"></use></svg><span>Reading Challenge</span></a>
+        <a href="{% url 'wishlist' %}" class="btn btn-ghost"><svg><use href="#icon-heart"></use></svg><span>Wishlist</span></a>
+    </div>
+</section>
+
+{% if history %}
+    <section class="history-list" data-reveal>
+        {% for entry in history %}
+            <article class="history-item">
+                <a href="{% url 'book_detail' entry.book.id %}" class="history-cover">
+                    {% if entry.book.card_image %}
+                        <img src="{{ entry.book.card_image.url }}" alt="{{ entry.book.title }}" loading="lazy">
+                    {% else %}
+                        <span><svg><use href="#icon-image"></use></svg></span>
+                    {% endif %}
+                </a>
+                <div class="history-info">
+                    <div class="history-info-top">
+                        <a href="{% url 'book_detail' entry.book.id %}"><strong>{{ entry.book.title }}</strong></a>
+                        <span class="history-action history-action-{{ entry.action }}">
+                            {% if entry.action == 'completed' %}
+                                <svg><use href="#icon-check"></use></svg> Tugatildi
+                            {% elif entry.action == 'started' %}
+                                <svg><use href="#icon-sparkles"></use></svg> Boshlandi
+                            {% else %}
+                                <svg><use href="#icon-arrow"></use></svg> Davom etildi
+                            {% endif %}
+                        </span>
+                    </div>
+                    <small class="muted-line"><svg><use href="#icon-user"></use></svg><span>{{ entry.book.author }}</span></small>
+                    <div class="progress-track small-track">
+                        <div class="progress-track-fill" style="width:{{ entry.percent_at_event }}%"></div>
+                    </div>
+                    <div class="history-meta">
+                        <span>{{ entry.percent_at_event }}% o'qildi</span>
+                        <span><svg><use href="#icon-calendar"></use></svg>{{ entry.created_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+                </div>
+            </article>
+        {% endfor %}
+    </section>
+{% else %}
+    <section class="empty-state" data-reveal>
+        <span class="empty-icon"><svg><use href="#icon-clock"></use></svg></span>
+        <h3>Tarix hali bo'sh</h3>
+        <p>Kitob o'qishni boshlaganingizda, bu yerda tarix shakllana boshlaydi.</p>
+        <a href="{% url 'book_list' %}" class="btn btn-primary"><svg><use href="#icon-library"></use></svg><span>Kitob tanlash</span></a>
+    </section>
+{% endif %}
+{% endblock %}

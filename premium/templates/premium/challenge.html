@@ -1,0 +1,81 @@
+{% extends 'books/base.html' %}
+
+{% block title %}Reading Challenge — KitobX{% endblock %}
+
+{% block content %}
+<section class="catalog-head" data-reveal>
+    <div>
+        <span class="eyebrow"><svg><use href="#icon-target"></use></svg> Yillik marafon</span>
+        <h1>Reading Challenge {{ challenge.year }}</h1>
+        <p>Bu yil necha ta kitob o'qishni maqsad qilib qo'ying va progressingizni kuzating.</p>
+    </div>
+</section>
+
+<section class="challenge-hero" data-reveal>
+    <div class="challenge-ring-wrap">
+        <svg class="challenge-ring" viewBox="0 0 140 140">
+            <circle class="ring-track" cx="70" cy="70" r="60"></circle>
+            <circle class="ring-fill" cx="70" cy="70" r="60" style="--ring-percent:{{ challenge.progress_percent }};"></circle>
+        </svg>
+        <div class="challenge-ring-text">
+            <strong>{{ challenge.progress_percent }}%</strong>
+            <small>{{ challenge.completed_count }} / {{ challenge.goal }} kitob</small>
+        </div>
+    </div>
+
+    <div class="challenge-info">
+        {% if challenge.is_achieved %}
+            <span class="challenge-badge achieved"><svg><use href="#icon-trophy"></use></svg>Maqsadga erishildi!</span>
+            <p>Tabriklaymiz! {{ challenge.year }}-yilgi {{ challenge.goal }} kitob o'qish maqsadingizga yetdingiz. Yangi, yuqoriroq maqsad belgilashga nima deysiz?</p>
+        {% else %}
+            <span class="challenge-badge"><svg><use href="#icon-sparkles"></use></svg>Davom eting!</span>
+            <p>Hozircha {{ challenge.completed_count }} ta kitob tugatdingiz. Maqsadga yetish uchun harakatni davom ettiring!</p>
+        {% endif %}
+
+        <form method="post" class="challenge-form">
+            {% csrf_token %}
+            <label class="input-control">
+                <svg><use href="#icon-target"></use></svg>
+                <input type="number" name="goal" min="1" max="365" value="{{ challenge.goal }}" required>
+            </label>
+            <button type="submit" class="btn btn-primary"><svg><use href="#icon-save"></use></svg><span>Maqsadni yangilash</span></button>
+        </form>
+    </div>
+</section>
+
+<section class="section-title" data-reveal>
+    <h2>{{ challenge.year }}-yilda tugatilgan kitoblar</h2>
+    <span><svg><use href="#icon-book"></use></svg>{{ challenge.completed_count }} ta</span>
+</section>
+
+{% if completed_entries %}
+    <section class="compact-book-list" data-reveal>
+        {% for entry in completed_entries %}
+            <a href="{% url 'book_detail' entry.book.id %}">
+                <span class="compact-icon"><svg><use href="#icon-trophy"></use></svg></span>
+                <span><strong>{{ entry.book.title }}</strong><small>{{ entry.book.author }} · {{ entry.created_at|date:"d.m.Y" }}</small></span>
+                <svg><use href="#icon-arrow"></use></svg>
+            </a>
+        {% endfor %}
+    </section>
+{% else %}
+    <div class="soft-empty" data-reveal>
+        <p>Hali bu yil tugatilgan kitob yo'q. Birinchisini o'qib, marafonni boshlang!</p>
+        <a href="{% url 'book_list' %}" class="btn btn-secondary"><svg><use href="#icon-library"></use></svg><span>Kitob tanlash</span></a>
+    </div>
+{% endif %}
+
+{% if previous_challenges %}
+<section class="section-title" data-reveal>
+    <h2>Oldingi yillar</h2>
+</section>
+<section class="challenge-history-grid" data-reveal>
+    {% for old in previous_challenges %}
+        <article class="mini-stats-card">
+            <strong>{{ old.year }}</strong>
+            <span>{{ old.completed_count }} / {{ old.goal }} kitob</span>
+        </article>
+    {% endfor %}
+</section>
+{% endif %}
+{% endblock %}

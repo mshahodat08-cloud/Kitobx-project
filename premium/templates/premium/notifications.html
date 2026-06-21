@@ -1,0 +1,35 @@
+{% extends 'books/base.html' %}
+
+{% block title %}Bildirishnomalar — KitobX{% endblock %}
+
+{% block content %}
+<section class="catalog-head" data-reveal>
+    <div>
+        <span class="eyebrow"><svg><use href="#icon-bell"></use></svg> Bildirishnomalar</span>
+        <h1>Barcha bildirishnomalar</h1>
+        <p>Tizimdagi muhim voqealar, yutuqlar va VIP holatingiz haqida xabarlar.</p>
+    </div>
+</section>
+
+{% if notifications %}
+    <section class="notif-page-list" data-reveal>
+        {% for n in notifications %}
+            <a href="{{ n.link|default:'#' }}" class="notif-page-item {% if not n.is_read %}unread{% endif %}">
+                <span class="notif-icon"><svg><use href="#icon-{{ n.icon }}"></use></svg></span>
+                <span class="notif-text">
+                    <strong>{{ n.title }}</strong>
+                    <small>{{ n.message }}</small>
+                    <small class="notif-time">{{ n.created_at|date:"d.m.Y H:i" }}</small>
+                </span>
+            </a>
+        {% endfor %}
+    </section>
+{% else %}
+    <section class="empty-state" data-reveal>
+        <span class="empty-icon"><svg><use href="#icon-bell"></use></svg></span>
+        <h3>Bildirishnomalar yo'q</h3>
+        <p>Yangi voqealar yuz berganda shu yerda ko'rinadi.</p>
+        <a href="{% url 'book_list' %}" class="btn btn-primary"><svg><use href="#icon-library"></use></svg><span>Katalogga o'tish</span></a>
+    </section>
+{% endif %}
+{% endblock %}

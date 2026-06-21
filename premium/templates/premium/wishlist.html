@@ -1,0 +1,54 @@
+{% extends 'books/base.html' %}
+
+{% block title %}Wishlist — KitobX{% endblock %}
+
+{% block content %}
+<section class="catalog-head" data-reveal>
+    <div>
+        <span class="eyebrow"><svg><use href="#icon-heart"></use></svg> Sevimlilar</span>
+        <h1>Wishlist</h1>
+        <p>Keyinroq o'qish uchun saqlab qo'ygan kitoblaringiz shu yerda to'planadi.</p>
+    </div>
+</section>
+
+{% if items %}
+    <section class="book-grid" aria-label="Wishlist kitoblari">
+        {% for item in items %}
+            {% with book=item.book %}
+            <article class="book-card" data-reveal>
+                <a href="{% url 'book_detail' book.id %}" class="cover-link" aria-label="{{ book.title }} haqida batafsil">
+                    {% if book.card_image %}
+                        <img src="{{ book.card_image.url }}" alt="{{ book.title }}" class="cover" loading="lazy">
+                    {% else %}
+                        <span class="cover-placeholder"><svg><use href="#icon-image"></use></svg><small>Rasm yo'q</small></span>
+                    {% endif %}
+                    <span class="pdf-badge"><svg><use href="#icon-pdf"></use></svg>PDF</span>
+                </a>
+                <div class="card-content">
+                    <div class="pill-line"><svg><use href="#icon-tag"></use></svg><span>{% if book.category %}{{ book.category.name }}{% else %}Kategoriyasiz{% endif %}</span></div>
+                    <h3><a href="{% url 'book_detail' book.id %}">{{ book.title }}</a></h3>
+                    <p class="muted-line"><svg><use href="#icon-user"></use></svg><span>{{ book.author }}</span></p>
+                    <div class="card-meta">
+                        <span><svg><use href="#icon-star"></use></svg>{{ book.average_rating|default:"0" }}</span>
+                        <span><svg><use href="#icon-eye"></use></svg>{{ book.views_count }}</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <a href="{% url 'book_read' book.id %}" class="btn btn-small btn-primary"><span>O'qish</span><svg><use href="#icon-arrow"></use></svg></a>
+                    <button type="button" class="icon-btn wishlist-btn active" data-book="{{ book.id }}" data-url="{% url 'wishlist_toggle' book.id %}" aria-label="Wishlistdan olib tashlash" aria-pressed="true">
+                        <svg><use href="#icon-heart"></use></svg>
+                    </button>
+                </div>
+            </article>
+            {% endwith %}
+        {% endfor %}
+    </section>
+{% else %}
+    <section class="empty-state" data-reveal>
+        <span class="empty-icon"><svg><use href="#icon-heart"></use></svg></span>
+        <h3>Wishlist bo'sh</h3>
+        <p>Yoqgan kitoblaringizni yurakcha tugmasi orqali shu yerga saqlang.</p>
+        <a href="{% url 'book_list' %}" class="btn btn-primary"><svg><use href="#icon-library"></use></svg><span>Katalogga o'tish</span></a>
+    </section>
+{% endif %}
+{% endblock %}
