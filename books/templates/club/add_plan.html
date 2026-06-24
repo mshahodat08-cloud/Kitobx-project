@@ -1,0 +1,179 @@
+{% extends "books/base.html" %}
+{% load static %}
+
+{% block title %}O'qish rejasi qo'shish — {{ club.name }}{% endblock %}
+
+{% block content %}
+<style>
+  .plan-wrap { max-width: 600px; margin: 0 auto; }
+
+  .plan-card {
+    background: var(--card-bg, #1a1025);
+    border: 1px solid var(--border, #2d1f40);
+    border-radius: 16px;
+    padding: 2rem;
+  }
+
+  .plan-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-primary, #f0e6ff);
+    margin-bottom: 0.3rem;
+  }
+  .plan-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted, #9370b8);
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group { margin-bottom: 1.1rem; }
+  .form-label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted, #9370b8);
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .form-input, .form-select {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 0.65rem 1rem;
+    font-size: 0.88rem;
+    color: var(--text-primary, #f0e6ff);
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+  }
+  .form-input:focus, .form-select:focus { border-color: rgba(236,72,153,0.5); }
+  .form-select option { background: #1a1025; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  .divider {
+    text-align: center;
+    color: var(--text-muted, #9370b8);
+    font-size: 0.78rem;
+    margin: 1rem 0;
+    position: relative;
+  }
+  .divider::before, .divider::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: calc(50% - 30px);
+    height: 1px;
+    background: rgba(255,255,255,0.07);
+  }
+  .divider::before { left: 0; }
+  .divider::after { right: 0; }
+
+  .form-actions {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 1.5rem;
+  }
+  .btn-submit {
+    flex: 1;
+    padding: 0.7rem;
+    background: linear-gradient(135deg, #ec4899, #a855f7);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .btn-submit:hover { opacity: 0.88; }
+  .btn-cancel {
+    padding: 0.7rem 1.2rem;
+    background: transparent;
+    color: var(--text-muted, #9370b8);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    font-size: 0.88rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    transition: background 0.2s;
+  }
+  .btn-cancel:hover { background: rgba(255,255,255,0.05); color: var(--text-muted,#9370b8); }
+</style>
+
+
+
+<div class="plan-wrap">
+  <div class="plan-card">
+    <div class="plan-title">📖 O'qish rejasi qo'shish</div>
+    <div class="plan-subtitle">{{ club.name }} klubi uchun</div>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- Select from catalog -->
+      <div class="form-group">
+        <label class="form-label">Katalogdan kitob tanlash</label>
+        <select name="book_id" class="form-select">
+          <option value="">— Katalogdan tanlang —</option>
+          {% for book in books %}
+            <option value="{{ book.pk }}">{{ book.title }} — {{ book.author }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="divider">yoki qo'lda kiriting</div>
+
+      <div class="form-group">
+        <label class="form-label">Kitob nomi (qo'lda)</label>
+        <input type="text" name="title" class="form-input" placeholder="Katalogda yo'q kitob nomi">
+      </div>
+
+      <!-- Dates -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Boshlanish sanasi *</label>
+          <input type="date" name="start_date" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tugash sanasi *</label>
+          <input type="date" name="end_date" class="form-input" required>
+        </div>
+      </div>
+
+      <!-- Pages -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Boshlanish sahifasi</label>
+          <input type="number" name="start_page" class="form-input" value="1" min="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tugash sahifasi</label>
+          <input type="number" name="end_page" class="form-input" value="0" min="0">
+        </div>
+      </div>
+
+      <!-- Week -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Hafta raqami</label>
+          <input type="number" name="week_number" class="form-input" value="1" min="1" max="52">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Jami haftalar</label>
+          <input type="number" name="total_weeks" class="form-input" value="8" min="1" max="52">
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a href="{% url 'club_detail' club.pk %}" class="btn-cancel">Bekor qilish</a>
+        <button type="submit" class="btn-submit">Reja qo'shish →</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

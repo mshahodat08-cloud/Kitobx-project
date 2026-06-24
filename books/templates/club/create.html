@@ -1,0 +1,167 @@
+{% extends "books/base.html" %}
+{% load static %}
+
+{% block title %}Yangi klub yaratish — KitobX{% endblock %}
+
+{% block content %}
+<style>
+  .create-club-wrap {
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  .create-club-card {
+    background: var(--card-bg, #1a1025);
+    border: 1px solid var(--border, #2d1f40);
+    border-radius: 16px;
+    padding: 2rem;
+  }
+
+  .create-club-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text-primary, #f0e6ff);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.1rem;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted, #9370b8);
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .form-input, .form-textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 0.65rem 1rem;
+    font-size: 0.88rem;
+    color: var(--text-primary, #f0e6ff);
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+  }
+  .form-input::placeholder, .form-textarea::placeholder { color: #6b5a7d; }
+  .form-input:focus, .form-textarea:focus { border-color: rgba(236,72,153,0.5); }
+  .form-textarea { resize: vertical; min-height: 100px; }
+
+  .form-file-label {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem 1rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px dashed rgba(255,255,255,0.15);
+    border-radius: 10px;
+    font-size: 0.83rem;
+    color: var(--text-muted, #9370b8);
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .form-file-label:hover { border-color: rgba(236,72,153,0.4); }
+  .form-file-label input { display: none; }
+
+  .form-hint {
+    font-size: 0.72rem;
+    color: var(--text-muted, #9370b8);
+    margin-top: 0.3rem;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 1.5rem;
+  }
+
+  .btn-submit {
+    flex: 1;
+    padding: 0.7rem;
+    background: linear-gradient(135deg, #ec4899, #a855f7);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .btn-submit:hover { opacity: 0.88; }
+
+  .btn-cancel {
+    padding: 0.7rem 1.2rem;
+    background: transparent;
+    color: var(--text-muted, #9370b8);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    font-size: 0.88rem;
+    text-decoration: none;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+  }
+  .btn-cancel:hover { background: rgba(255,255,255,0.05); color: var(--text-muted, #9370b8); }
+</style>
+
+
+
+<div class="create-club-wrap">
+  <div class="create-club-card">
+    <div class="create-club-title">📚 Yangi klub yaratish</div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div style="padding:0.7rem 1rem; border-radius:8px; margin-bottom:1rem;
+          background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25);
+          color:#f87171; font-size:0.83rem;">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label class="form-label" for="name">Klub nomi *</label>
+        <input type="text" id="name" name="name" class="form-input"
+               placeholder="Masalan: KitobSevarlar" required maxlength="255">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="description">Tavsif</label>
+        <textarea id="description" name="description" class="form-textarea"
+                  placeholder="Klub maqsadi, qoidalari haqida qisqacha..."></textarea>
+        <p class="form-hint">Ixtiyoriy. Keyinchalik tahrirlash mumkin.</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Klub muqovasi (ixtiyoriy)</label>
+        <label class="form-file-label">
+          <span>🖼️</span>
+          <span id="coverFileName">Rasm tanlash (jpg, png, webp)</span>
+          <input type="file" name="cover" accept="image/jpeg,image/png,image/webp"
+                 onchange="document.getElementById('coverFileName').textContent = this.files[0]?.name || 'Rasm tanlash'">
+        </label>
+        <p class="form-hint">Tavsiya etilgan: 800×400px yoki katta</p>
+      </div>
+
+      <div class="form-actions">
+        <a href="{% url 'club_list' %}" class="btn-cancel">Bekor qilish</a>
+        <button type="submit" class="btn-submit">Klub yaratish →</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

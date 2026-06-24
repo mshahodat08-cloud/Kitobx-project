@@ -1,0 +1,1103 @@
+{% extends "books/base.html" %}
+{% load static %}
+
+{% block title %}{{ club.name }} — Book Club{% endblock %}
+
+{% block content %}
+<style>
+  /* ── Layout ── */
+  .club-grid {
+    display: grid;
+    grid-template-columns: 260px 1fr 280px;
+    gap: 1.25rem;
+    align-items: start;
+  }
+
+  /* ── Sidebar left ── */
+  .club-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .club-cover-card {
+    background: var(--card-bg, #1a1025);
+    border: 1px solid var(--border, #2d1f40);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .club-cover-img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+  }
+
+  .club-cover-placeholder {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: linear-gradient(135deg, #1a0a2e 0%, #2d1042 50%, #1a0a2e 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: #c084fc;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .club-cover-placeholder .cover-icon {
+    font-size: 2.8rem;
+    opacity: 0.7;
+  }
+
+  .club-info-card {
+    background: var(--card-bg, #1a1025);
+    border: 1px solid var(--border, #2d1f40);
+    border-radius: 14px;
+    padding: 1.1rem 1.1rem 0.9rem;
+  }
+
+  .club-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary, #f0e6ff);
+    margin-bottom: 0.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .club-badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: rgba(236, 72, 153, 0.15);
+    color: #ec4899;
+    border: 1px solid rgba(236, 72, 153, 0.3);
+  }
+
+  .club-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted, #9370b8);
+    line-height: 1.5;
+    margin-bottom: 0.9rem;
+  }
+
+  .club-meta-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.7rem;
+    font-size: 0.78rem;
+    color: var(--text-muted, #9370b8);
+  }
+
+  .club-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    padding: 4px 8px;
+  }
+
+  .club-meta-item strong {
+    color: var(--text-primary, #f0e6ff);
+    font-size: 0.85rem;
+  }
+
+  .club-created {
+    font-size: 0.72rem;
+    color: var(--text-muted, #9370b8);
+    margin-top: 0.4rem;
+  }
+
+  .btn-join {
+    width: 100%;
+    padding: 0.6rem;
+    background: linear-gradient(135deg, #ec4899, #a855f7);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.88rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-top: 0.5rem;
+    text-align: center;
+    display: block;
+  }
+  .btn-join:hover { opacity: 0.88; color: #fff; }
+
+  .btn-leave {
+    width: 100%;
+    padding: 0.55rem;
+    background: transparent;
+    color: #ec4899;
+    font-weight: 600;
+    font-size: 0.83rem;
+    border: 1px solid rgba(236,72,153,0.3);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 0.4rem;
+    text-align: center;
+    display: block;
+  }
+  .btn-leave:hover { background: rgba(236,72,153,0.08); }
+
+  /* ── Members list ── */
+  .members-card {
+    background: var(--card-bg, #1a1025);
+    border: 1px solid var(--border, #2d1f40);
+    border-radius: 14px;
+    padding: 1rem;
+  }
+
+  .members-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+  }
+
+  .members-header h4 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary, #f0e6ff);
+    margin: 0;
+  }
+
+  .members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .member-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+  }
+
+  .member-left {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .member-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6d28d9, #ec4899);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .member-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+  .member-name {
+    font-size: 0.82rem;
+    color: var(--text-primary, #f0e6ff);
+    font-weight: 500;
+  }
+
+  .member-role {
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+  .role-admin {
+    background: rgba(236, 72, 153, 0.15);
+    color: #ec4899;
+    border: 1px solid rgba(236,72,153,0.25);
+  }
+  .role-member {
+    background: rgba(255,255,255,0.06);
+    color: #9370b8;
+  }
+
+  .members-all-link {
+    font-size: 0.75rem;
+    color: #9370b8;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .members-all-link:hover { color: #ec4899; }
+
+  /* ── Main center ── */
+  .club-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    min-width: 0;
+  }
+
+  .section-card {
+    background: var(--card-bg, #1a1025);
+    border: 1px solid var(--border, #2d1f40);
+    border-radius: 14px;
+    padding: 1.2rem;
+  }
+
+  .section-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary, #f0e6ff);
+    margin-bottom: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* ── About / Rules ── */
+  .about-text {
+    font-size: 0.83rem;
+    color: var(--text-secondary, #c4a8e0);
+    line-height: 1.65;
+    margin-bottom: 0.9rem;
+  }
+
+  .tag-list {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-size: 0.75rem;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 500;
+    background: rgba(168,85,247,0.12);
+    color: #c084fc;
+    border: 1px solid rgba(168,85,247,0.2);
+  }
+
+  /* ── Active book ── */
+  .active-book-inner {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .active-book-cover {
+    width: 90px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  .active-book-cover img {
+    width: 100%;
+    display: block;
+  }
+  .active-book-cover-placeholder {
+    width: 90px;
+    height: 130px;
+    background: linear-gradient(135deg, #2d1042, #1a0a2e);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    flex-shrink: 0;
+  }
+
+  .active-book-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .active-book-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary, #f0e6ff);
+    margin-bottom: 0.15rem;
+  }
+
+  .active-book-subtitle {
+    font-size: 0.78rem;
+    color: #ec4899;
+    margin-bottom: 0.5rem;
+  }
+
+  .active-book-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted, #9370b8);
+    line-height: 1.55;
+    margin-bottom: 0.8rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .book-dates-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.8rem;
+  }
+
+  .book-date-item {
+    font-size: 0.75rem;
+    color: var(--text-muted, #9370b8);
+  }
+  .book-date-item span {
+    display: block;
+    font-size: 0.7rem;
+    color: #9370b8;
+    margin-bottom: 2px;
+  }
+  .book-date-item strong {
+    color: var(--text-primary, #f0e6ff);
+    font-weight: 600;
+  }
+
+  .progress-wrap {
+    margin-top: 0.5rem;
+  }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: var(--text-muted, #9370b8);
+    margin-bottom: 5px;
+  }
+  .progress-bar-track {
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ec4899, #a855f7);
+    border-radius: 10px;
+    transition: width 0.6s ease;
+  }
+
+  .book-info-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border: 1px solid rgba(236,72,153,0.4);
+    color: #ec4899;
+    background: transparent;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s;
+    margin-top: 0.7rem;
+  }
+  .book-info-btn:hover { background: rgba(236,72,153,0.1); color: #ec4899; }
+
+  /* ── Chat ── */
+  .chat-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 4px;
+    margin-bottom: 1rem;
+    scroll-behavior: smooth;
+  }
+
+  .chat-messages::-webkit-scrollbar { width: 4px; }
+  .chat-messages::-webkit-scrollbar-track { background: transparent; }
+  .chat-messages::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.25); border-radius: 4px; }
+
+  .chat-msg {
+    display: flex;
+    gap: 0.65rem;
+    align-items: flex-start;
+  }
+
+  .chat-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6d28d9, #ec4899);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .chat-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+  .chat-bubble {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .chat-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .chat-username {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-primary, #f0e6ff);
+  }
+
+  .chat-time {
+    font-size: 0.7rem;
+    color: var(--text-muted, #9370b8);
+  }
+
+  .chat-text {
+    font-size: 0.82rem;
+    color: var(--text-secondary, #c4a8e0);
+    line-height: 1.5;
+    word-break: break-word;
+  }
+
+  .chat-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-muted, #9370b8);
+    font-size: 0.83rem;
+  }
+
+  .chat-locked {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-muted, #9370b8);
+    font-size: 0.83rem;
+    background: rgba(255,255,255,0.02);
+    border-radius: 10px;
+  }
+
+  .chat-form {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+  }
+
+  .chat-input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 0.6rem 1rem;
+    font-size: 0.83rem;
+    color: var(--text-primary, #f0e6ff);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .chat-input::placeholder { color: #6b5a7d; }
+  .chat-input:focus { border-color: rgba(236,72,153,0.4); }
+
+  .btn-send {
+    padding: 0.6rem 1.2rem;
+    background: linear-gradient(135deg, #ec4899, #a855f7);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.83rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+  }
+  .btn-send:hover { opacity: 0.88; }
+
+  /* ── Right sidebar ── */
+  .club-sidebar-right {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* ── Rules card ── */
+  .rules-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .rule-item {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    font-size: 0.8rem;
+    color: var(--text-secondary, #c4a8e0);
+    line-height: 1.45;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .rule-item:last-child { border-bottom: none; }
+
+  .rule-bullet {
+    width: 6px;
+    height: 6px;
+    background: #ec4899;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 6px;
+  }
+
+  .rule-actions {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .rule-del-btn {
+    font-size: 0.68rem;
+    color: #9370b8;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: color 0.2s;
+  }
+  .rule-del-btn:hover { color: #ec4899; }
+
+  .rules-empty {
+    font-size: 0.8rem;
+    color: var(--text-muted, #9370b8);
+  }
+
+  /* Add rule form */
+  .add-rule-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+  }
+  .add-rule-input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.78rem;
+    color: var(--text-primary, #f0e6ff);
+    outline: none;
+  }
+  .add-rule-input:focus { border-color: rgba(236,72,153,0.4); }
+  .add-rule-btn {
+    padding: 0.45rem 0.8rem;
+    background: rgba(236,72,153,0.15);
+    color: #ec4899;
+    border: 1px solid rgba(236,72,153,0.3);
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .add-rule-btn:hover { background: rgba(236,72,153,0.25); }
+
+  /* ── Upcoming plans ── */
+  .upcoming-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .upcoming-item {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .upcoming-cover {
+    width: 42px;
+    height: 58px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #2d1042, #1a0a2e);
+    overflow: hidden;
+  }
+  .upcoming-cover-ph {
+    width: 42px;
+    height: 58px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #2d1042, #1a0a2e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .upcoming-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .upcoming-info { min-width: 0; }
+  .upcoming-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-primary, #f0e6ff);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .upcoming-author {
+    font-size: 0.72rem;
+    color: var(--text-muted, #9370b8);
+    margin-bottom: 2px;
+  }
+  .upcoming-dates {
+    font-size: 0.7rem;
+    color: var(--text-muted, #9370b8);
+  }
+
+  .plans-footer {
+    margin-top: 0.8rem;
+  }
+  .plans-btn {
+    width: 100%;
+    padding: 0.55rem;
+    background: transparent;
+    color: #ec4899;
+    border: 1px solid rgba(236,72,153,0.3);
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    transition: background 0.2s;
+  }
+  .plans-btn:hover { background: rgba(236,72,153,0.08); color: #ec4899; }
+
+  /* ── Admin panel ── */
+  .admin-section {
+    background: rgba(236, 72, 153, 0.05);
+    border: 1px dashed rgba(236, 72, 153, 0.2);
+    border-radius: 14px;
+    padding: 1rem;
+  }
+  .admin-section-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #ec4899;
+    margin-bottom: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .admin-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .admin-btn {
+    width: 100%;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: background 0.2s;
+  }
+  .admin-btn-primary {
+    background: rgba(168,85,247,0.15);
+    color: #c084fc;
+    border: 1px solid rgba(168,85,247,0.25);
+  }
+  .admin-btn-primary:hover { background: rgba(168,85,247,0.25); color: #c084fc; }
+
+  /* ── Responsive ── */
+  @media (max-width: 1024px) {
+    .club-grid {
+      grid-template-columns: 220px 1fr;
+    }
+    .club-sidebar-right {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .club-grid {
+      grid-template-columns: 1fr;
+    }
+    .active-book-inner { flex-direction: column; }
+  }
+</style>
+
+
+
+<div class="club-grid">
+
+  <!-- ══════════════════════════════════════
+       LEFT SIDEBAR
+  ══════════════════════════════════════ -->
+  <aside class="club-sidebar">
+
+    <!-- Cover -->
+    <div class="club-cover-card">
+      {% if club.cover %}
+        <img src="{{ club.cover.url }}" alt="{{ club.name }}" class="club-cover-img">
+      {% else %}
+        <div class="club-cover-placeholder">
+          <span class="cover-icon">📚</span>
+          <span>Book Club</span>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Club info -->
+    <div class="club-info-card">
+      <div class="club-name">
+        {{ club.name }}
+        <span class="club-badge">{% if club.is_public %}Ochiq club{% else %}Yopiq club{% endif %}</span>
+      </div>
+      <p class="club-desc">{{ club.description|default:"Kitob o'qishni yaxshi ko'ruvchi insonlar uchun maxsus klub." }}</p>
+
+      <div class="club-meta-row">
+        <div class="club-meta-item">
+          👥 <strong>{{ member_count }}</strong>&nbsp;a'zo
+        </div>
+        <div class="club-meta-item">
+          🛡 <strong>{{ admin_count }}</strong>&nbsp;admin
+        </div>
+        {% if active_plan %}
+        <div class="club-meta-item">
+          📅 <strong>{{ active_plan.week_number }}/{{ active_plan.total_weeks }}</strong>&nbsp;hafta
+        </div>
+        {% endif %}
+      </div>
+
+      <p class="club-created">Yaratilgan sana: {{ club.created_at|date:"d.m.Y" }}</p>
+
+      {% if request.user.is_authenticated %}
+        {% if is_member %}
+          <a href="{% url 'leave_club' club.pk %}"
+             class="btn-leave"
+             onclick="return confirm('Haqiqatan ham klubdan chiqmoqchimisiz?')">
+            Klubni tark etish
+          </a>
+        {% else %}
+          <a href="{% url 'join_club' club.pk %}" class="btn-join">Klubga qo'shilish</a>
+        {% endif %}
+      {% else %}
+        <a href="{% url 'login' %}?next={{ request.path }}" class="btn-join">Kirish / Ro'yxatdan o'tish</a>
+      {% endif %}
+    </div>
+
+    <!-- Members list -->
+    <div class="members-card">
+      <div class="members-header">
+        <h4>A'zolar ({{ member_count }})</h4>
+        <span class="members-all-link">Barchasi</span>
+      </div>
+      <div class="members-list">
+        {% for m in members_list %}
+        <div class="member-item">
+          <div class="member-left">
+            <div class="member-avatar">
+              {% if m.profile.avatar %}
+                <img src="{{ m.profile.avatar.url }}" alt="{{ m.username }}">
+              {% else %}
+                {{ m.username|first|upper }}
+              {% endif %}
+            </div>
+            <span class="member-name">{{ m.get_full_name|default:m.username }}</span>
+          </div>
+          {% if m == club.owner %}
+            <span class="member-role role-admin">Admin</span>
+          {% elif m in club.admins.all %}
+            <span class="member-role role-admin">Admin</span>
+          {% else %}
+            <span class="member-role role-member">A'zo</span>
+          {% endif %}
+        </div>
+        {% empty %}
+          <p style="font-size:0.8rem;color:#9370b8;">Hali a'zo yo'q.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+  </aside><!-- /left sidebar -->
+
+
+  <!-- ══════════════════════════════════════
+       MAIN CENTER
+  ══════════════════════════════════════ -->
+  <main class="club-main">
+
+    <!-- About -->
+    <div class="section-card">
+      <div class="section-title">ℹ️ Klub haqida</div>
+      <p class="about-text">
+        {{ club.description|default:"Bu klubda biz har hafta bitta kitobni o'qiymiz va uning ustida fikr almashimiz. Maqsadimiz — bilim olish va o'zimizni rivojlantirish." }}
+      </p>
+      <div class="tag-list">
+        <span class="tag">Kitob o'qish</span>
+        <span class="tag">Motivatsiya</span>
+        <span class="tag">Fikr almashish</span>
+      </div>
+    </div>
+
+    <!-- Active reading book -->
+    {% if active_plan %}
+    <div class="section-card">
+      <div class="section-title" style="justify-content: space-between;">
+        <span>📗 Hozirgi kitob</span>
+        {% if active_plan.book %}
+          <a href="{% url 'book_detail' active_plan.book.pk %}" class="book-info-btn">📖 Kitob ma'lumoti</a>
+        {% endif %}
+      </div>
+
+      <div class="active-book-inner">
+        {% with cover=active_plan.display_cover %}
+          {% if cover %}
+            <div class="active-book-cover">
+              <img src="{{ cover.url }}" alt="{{ active_plan.display_title }}">
+            </div>
+          {% else %}
+            <div class="active-book-cover-placeholder">📖</div>
+          {% endif %}
+        {% endwith %}
+
+        <div class="active-book-info">
+          <div class="active-book-title">{{ active_plan.display_title }}</div>
+          {% if active_plan.book %}
+            <div class="active-book-subtitle">{{ active_plan.book.author }}</div>
+            <p class="active-book-desc">{{ active_plan.book.description|truncatewords:35 }}</p>
+          {% endif %}
+
+          <div class="book-dates-row">
+            <div class="book-date-item">
+              <span>Hafta</span>
+              <strong>{{ active_plan.week_number }} / {{ active_plan.total_weeks }}</strong>
+            </div>
+            <div class="book-date-item">
+              <span>Boshlanish</span>
+              <strong>{{ active_plan.start_date|date:"d.m.Y" }}</strong>
+            </div>
+            <div class="book-date-item">
+              <span>Tugash</span>
+              <strong>{{ active_plan.end_date|date:"d.m.Y" }}</strong>
+            </div>
+            {% if active_plan.end_page > 0 %}
+            <div class="book-date-item">
+              <span>O'qish rejasi</span>
+              <strong>{{ active_plan.start_page }} - {{ active_plan.end_page }} bet</strong>
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="progress-wrap">
+            <div class="progress-label">
+              <span>Progress</span>
+              <span>{{ active_plan.progress_percent }}%</span>
+            </div>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" style="width: {{ active_plan.progress_percent }}%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="section-card" style="text-align:center; padding: 2rem;">
+      <div style="font-size:2.5rem; margin-bottom:0.5rem;">📚</div>
+      <p style="color:var(--text-muted,#9370b8); font-size:0.85rem; margin-bottom:1rem;">
+        Hozirgi vaqtda faol o'qish rejasi yo'q.
+      </p>
+      {% if is_admin %}
+        <a href="{% url 'add_reading_plan' club.pk %}" class="btn-join" style="max-width:200px; margin:0 auto;">
+          + O'qish rejasi qo'shish
+        </a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Chat -->
+    <div class="section-card" id="chat">
+      <div class="section-title">💬 Klub chat</div>
+
+      {% if is_member %}
+        <div class="chat-messages" id="chatMessages">
+          {% for msg in chat_messages %}
+          <div class="chat-msg">
+            <div class="chat-avatar">
+              {% if msg.user.profile.avatar %}
+                <img src="{{ msg.user.profile.avatar.url }}" alt="{{ msg.user.username }}">
+              {% else %}
+                {{ msg.user.username|first|upper }}
+              {% endif %}
+            </div>
+            <div class="chat-bubble">
+              <div class="chat-meta">
+                <span class="chat-username">{{ msg.user.get_full_name|default:msg.user.username }}</span>
+                <span class="chat-time">{{ msg.created_at|date:"H:i" }}</span>
+              </div>
+              <div class="chat-text">{{ msg.message }}</div>
+            </div>
+          </div>
+          {% empty %}
+          <div class="chat-empty">
+            <div style="font-size:1.8rem;margin-bottom:0.4rem;">🤫</div>
+            Hali xabarlar yo'q. Birinchi bo'lib yozing!
+          </div>
+          {% endfor %}
+        </div>
+
+        <form action="{% url 'send_message' club.pk %}" method="post" class="chat-form">
+          {% csrf_token %}
+          <input
+            type="text"
+            name="message"
+            class="chat-input"
+            placeholder="Xabar yozing..."
+            autocomplete="off"
+            required
+          >
+          <button type="submit" class="btn-send">Yuborish</button>
+        </form>
+
+      {% else %}
+        <div class="chat-locked">
+          🔒 Chatni ko'rish va xabar yuborish uchun avval klubga qo'shiling.
+          {% if not request.user.is_authenticated %}
+            <br><br>
+            <a href="{% url 'login' %}?next={{ request.path }}" class="btn-join" style="display:inline-block;max-width:180px;">Kirish</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+
+  </main><!-- /center main -->
+
+
+  <!-- ══════════════════════════════════════
+       RIGHT SIDEBAR
+  ══════════════════════════════════════ -->
+  <aside class="club-sidebar-right">
+
+    <!-- Rules -->
+    <div class="section-card">
+      <div class="section-title">📋 Qoidalar</div>
+      {% if rules %}
+        <div class="rules-list">
+          {% for rule in rules %}
+          <div class="rule-item">
+            <div class="rule-bullet"></div>
+            <span>{{ rule.text }}</span>
+            {% if is_admin %}
+            <div class="rule-actions">
+              <form action="{% url 'delete_rule' club.pk rule.pk %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="rule-del-btn" title="O'chirish">✕</button>
+              </form>
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="rules-empty">Hozircha qoidalar yo'q.</p>
+      {% endif %}
+
+      {% if is_admin %}
+      <form action="{% url 'add_rule' club.pk %}" method="post" class="add-rule-form">
+        {% csrf_token %}
+        <input type="text" name="text" class="add-rule-input" placeholder="Yangi qoida..." required>
+        <button type="submit" class="add-rule-btn">+ Qo'sh</button>
+      </form>
+      {% endif %}
+    </div>
+
+    <!-- Upcoming reading plans -->
+    <div class="section-card">
+      <div class="section-title">📅 Kelgusi rejalar</div>
+
+      {% if upcoming_plans %}
+        <div class="upcoming-list">
+          {% for plan in upcoming_plans %}
+          <div class="upcoming-item">
+            {% with cover=plan.display_cover %}
+              {% if cover %}
+                <div class="upcoming-cover">
+                  <img src="{{ cover.url }}" alt="{{ plan.display_title }}">
+                </div>
+              {% else %}
+                <div class="upcoming-cover-ph">📚</div>
+              {% endif %}
+            {% endwith %}
+            <div class="upcoming-info">
+              <div class="upcoming-title">{{ plan.display_title }}</div>
+              {% if plan.book %}<div class="upcoming-author">{{ plan.book.author }}</div>{% endif %}
+              <div class="upcoming-dates">{{ plan.start_date|date:"d.m.Y" }} – {{ plan.end_date|date:"d.m.Y" }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% if is_admin %}
+        <div class="plans-footer">
+          <a href="{% url 'add_reading_plan' club.pk %}" class="plans-btn">📖 Barcha rejalarni ko'rish</a>
+        </div>
+        {% endif %}
+      {% else %}
+        <p class="rules-empty">Kelgusi rejalar yo'q.</p>
+        {% if is_admin %}
+        <div class="plans-footer">
+          <a href="{% url 'add_reading_plan' club.pk %}" class="plans-btn">+ Reja qo'shish</a>
+        </div>
+        {% endif %}
+      {% endif %}
+    </div>
+
+    <!-- Admin panel (only for admins) -->
+    {% if is_admin %}
+    <div class="admin-section">
+      <div class="admin-section-title">🛡 Admin panel</div>
+      <div class="admin-btns">
+        <a href="{% url 'add_reading_plan' club.pk %}" class="admin-btn admin-btn-primary">
+          📖 O'qish rejasi qo'shish
+        </a>
+      </div>
+    </div>
+    {% endif %}
+
+  </aside><!-- /right sidebar -->
+
+</div><!-- /club-grid -->
+
+<script>
+  // Auto-scroll chat to bottom
+  (function () {
+    const box = document.getElementById("chatMessages");
+    if (box) box.scrollTop = box.scrollHeight;
+  })();
+</script>
+{% endblock %}

@@ -10,6 +10,7 @@ from django.utils.text import slugify
 
 from .forms import BookForm, BookReviewForm
 from .models import Book, BookReview, Category
+from .models import ClubRule, ClubReadingPlan, ClubMessage
 
 
 def is_content_admin(user):
@@ -199,3 +200,222 @@ def book_download(request, pk):
     title = slugify(book.title) or "kitob"
     filename = f"{title}.pdf"
     return FileResponse(book.pdf_file.open("rb"), as_attachment=True, filename=filename, content_type="application/pdf")
+
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import BookClub, ClubMessage
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def club_list(request):
+    clubs = BookClub.objects.annotate(
+        members_total=Count("members", distinct=True)
+    ).order_by("-created_at")
+
+    my_clubs = clubs.filter(members=request.user)
+    public_clubs = clubs.filter(is_public=True).exclude(members=request.user)
+
+    return render(request, "club/list.html", {
+        "my_clubs": my_clubs,
+        "public_clubs": public_clubs,
+    })
+
+
+@login_required
+def create_club(request):
+    """Yangi klub yaratish."""
+    if request.method == "POST":
+        name = request.POST.get("name", "").strip()
+        description = request.POST.get("description", "").strip()
+        cover = request.FILES.get("cover")
+
+        if not name:
+            messages.error(request, "Klub nomi kiritilishi shart.")
+            return render(request, "club/create.html")
+
+        club = BookClub.objects.create(
+            name=name,
+            description=description,
+            owner=request.user,
+            cover=cover,
+        )
+        club.members.add(request.user)
+        club.admins.add(request.user)
+        messages.success(request, f"'{club.name}' klubi muvaffaqiyatli yaratildi!")
+        return redirect("club_detail", pk=club.pk)
+
+    return render(request, "club/create.html")
+
+
+def club_detail(request, pk):
+    """Klub detail sahifasi — birinchi rasmdagi to'liq ko'rinish."""
+    club = get_object_or_404(
+        BookClub.objects.prefetch_related("members", "admins"),
+        pk=pk,
+    )
+
+    is_member = request.user.is_authenticated and club.is_member(request.user)
+    is_admin = request.user.is_authenticated and club.is_admin(request.user)
+
+    # Faqat a'zolar chatni ko'radi
+    chat_messages = []
+    if is_member:
+        chat_messages = ClubMessage.objects.filter(club=club).select_related("user").order_by("created_at")
+
+    rules = ClubRule.objects.filter(club=club).order_by("order")
+    active_plan = ClubReadingPlan.objects.filter(club=club, is_active=True).select_related("book").first()
+    upcoming_plans = ClubReadingPlan.objects.filter(club=club, is_active=False).select_related("book").order_by("start_date")[:3]
+
+    # A'zolar ro'yxati (admin + oddiy)
+    members_list = club.members.select_related("profile").order_by("username")[:20]
+
+    return render(request, "club/detail.html", {
+        "club": club,
+        "is_member": is_member,
+        "is_admin": is_admin,
+        "chat_messages": chat_messages,
+        "rules": rules,
+        "active_plan": active_plan,
+        "upcoming_plans": upcoming_plans,
+        "members_list": members_list,
+        "member_count": club.member_count,
+        "admin_count": club.admin_count,
+    })
+
+
+@login_required
+def send_message(request, pk):
+    """Klub chatiga xabar yuborish."""
+    club = get_object_or_404(BookClub, pk=pk)
+
+    if not club.is_member(request.user):
+        messages.warning(request, "Xabar yuborish uchun avval klubga qo'shiling.")
+        return redirect("club_detail", pk=pk)
+
+    if request.method == "POST":
+        msg = request.POST.get("message", "").strip()
+        if msg:
+            ClubMessage.objects.create(club=club, user=request.user, message=msg)
+
+    return redirect(f"{reverse('club_detail', kwargs={'pk': pk})}#chat")
+
+
+@login_required
+def join_club(request, pk):
+    """Klubga qo'shilish."""
+    club = get_object_or_404(BookClub, pk=pk)
+    if not club.is_member(request.user):
+        club.members.add(request.user)
+        messages.success(request, f"'{club.name}' klubiga muvaffaqiyatli qo'shildingiz!")
+    return redirect("club_detail", pk=pk)
+
+
+@login_required
+def leave_club(request, pk):
+    """Klubdan chiqish."""
+    club = get_object_or_404(BookClub, pk=pk)
+    if club.owner == request.user:
+        messages.error(request, "Klub egasi klubdan chiqolmaydi. Avval boshqa birovga o'tkazing.")
+        return redirect("club_detail", pk=pk)
+    club.members.remove(request.user)
+    messages.info(request, f"'{club.name}' klubidan chiqdingiz.")
+    return redirect("club_list")
+
+
+@login_required
+def add_rule(request, pk):
+    """Klub qoidasini qo'shish (faqat adminlar)."""
+    club = get_object_or_404(BookClub, pk=pk)
+    if not club.is_admin(request.user):
+        messages.error(request, "Bu amalni faqat klub adminlari bajarishi mumkin.")
+        return redirect("club_detail", pk=pk)
+
+    if request.method == "POST":
+        text = request.POST.get("text", "").strip()
+        if text:
+            order = ClubRule.objects.filter(club=club).count() + 1
+            ClubRule.objects.create(club=club, text=text, order=order)
+            messages.success(request, "Qoida qo'shildi.")
+
+    return redirect("club_detail", pk=pk)
+
+
+@login_required
+def delete_rule(request, pk, rule_pk):
+    """Klub qoidasini o'chirish (faqat adminlar)."""
+    club = get_object_or_404(BookClub, pk=pk)
+    if not club.is_admin(request.user):
+        messages.error(request, "Bu amalni faqat klub adminlari bajarishi mumkin.")
+        return redirect("club_detail", pk=pk)
+
+    rule = get_object_or_404(ClubRule, pk=rule_pk, club=club)
+    rule.delete()
+    messages.success(request, "Qoida o'chirildi.")
+    return redirect("club_detail", pk=pk)
+
+
+@login_required
+def add_reading_plan(request, pk):
+    """O'qish rejasini qo'shish (faqat adminlar)."""
+    club = get_object_or_404(BookClub, pk=pk)
+    if not club.is_admin(request.user):
+        messages.error(request, "Bu amalni faqat klub adminlari bajarishi mumkin.")
+        return redirect("club_detail", pk=pk)
+
+    books = Book.objects.all()
+
+    if request.method == "POST":
+        book_id = request.POST.get("book_id")
+        custom_title = request.POST.get("title", "").strip()
+        start_date = request.POST.get("start_date")
+        end_date = request.POST.get("end_date")
+        start_page = request.POST.get("start_page", 1)
+        end_page = request.POST.get("end_page", 0)
+        week_number = request.POST.get("week_number", 1)
+        total_weeks = request.POST.get("total_weeks", 8)
+        cover = request.FILES.get("cover")
+
+        # Avvalgi aktiv rejani o'chirish
+        ClubReadingPlan.objects.filter(club=club, is_active=True).update(is_active=False)
+
+        plan = ClubReadingPlan(
+            club=club,
+            start_date=start_date,
+            end_date=end_date,
+            start_page=start_page,
+            end_page=end_page,
+            week_number=week_number,
+            total_weeks=total_weeks,
+            is_active=True,
+        )
+        if book_id:
+            plan.book = get_object_or_404(Book, pk=book_id)
+        else:
+            plan.title = custom_title
+            plan.cover = cover
+
+        plan.save()
+        messages.success(request, "O'qish rejasi qo'shildi.")
+        return redirect("club_detail", pk=pk)
+
+    return render(request, "club/add_plan.html", {"club": club, "books": books})
+
+
+@login_required
+def promote_to_admin(request, pk, user_pk):
+    """A'zoni adminga ko'tarish."""
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+
+    club = get_object_or_404(BookClub, pk=pk)
+    if club.owner != request.user:
+        messages.error(request, "Bu amalni faqat klub egasi bajarishi mumkin.")
+        return redirect("club_detail", pk=pk)
+
+    member = get_object_or_404(User, pk=user_pk)
+    if club.is_member(member):
+        club.admins.add(member)
+        messages.success(request, f"{member.username} admin qilindi.")
+    return redirect("club_detail", pk=pk)

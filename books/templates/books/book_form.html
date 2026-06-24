@@ -5,45 +5,130 @@
 {% block content %}
 <section class="form-layout" data-reveal>
     <aside class="form-aside">
-        <a href="{% if book %}{% url 'book_detail' book.id %}{% else %}{% url 'book_list' %}{% endif %}" class="back-link"><svg><use href="#icon-back"></use></svg><span>Orqaga qaytish</span></a>
-        <span class="eyebrow"><svg><use href="#icon-admin"></use></svg> Admin kontent</span>
+        <a href="{% if book %}{% url 'book_detail' book.id %}{% else %}{% url 'book_list' %}{% endif %}" class="back-link">
+            <svg><use href="#icon-back"></use></svg>
+            <span>Orqaga qaytish</span>
+        </a>
+
+        <span class="eyebrow">
+            <svg><use href="#icon-admin"></use></svg>
+            Admin kontent
+        </span>
+
         <h1>{{ page_title }}</h1>
-        <p>Kitob saqlanishi uchun banner rasmi va PDF fayl majburiy. Oddiy foydalanuvchi kitobni faqat o'qiydi, admin esa tahrirlash va o'chirish huquqiga ega.</p>
+
+        <p>
+            Kitob saqlanishi uchun banner rasmi va PDF fayl majburiy.
+            Oddiy foydalanuvchi kitobni faqat o‘qiydi, admin esa
+            tahrirlash va o‘chirish huquqiga ega.
+        </p>
+
         <div class="hint-card">
             <svg><use href="#icon-info"></use></svg>
-            <span>PDF yuklanmasa kitob saqlanmaydi. Banner detail va reader sahifalarida ishlatiladi.</span>
+            <span>
+                Agar yangi rasm yoki PDF tanlanmasa eski fayl saqlanib qoladi.
+            </span>
         </div>
     </aside>
 
-    <form method="post" enctype="multipart/form-data" class="panel-form book-form" novalidate>
+    <form method="post"
+          enctype="multipart/form-data"
+          class="panel-form book-form"
+          novalidate>
+
         {% csrf_token %}
+
         {% for field in form %}
             <div class="form-group {% if field.errors %}has-error{% endif %}">
                 <label for="{{ field.id_for_label }}">
-                    {% if field.name == 'title' %}<svg><use href="#icon-book"></use></svg>
-                    {% elif field.name == 'author' %}<svg><use href="#icon-user"></use></svg>
-                    {% elif field.name == 'published_year' %}<svg><use href="#icon-calendar"></use></svg>
-                    {% elif field.name == 'description' %}<svg><use href="#icon-info"></use></svg>
-                    {% elif field.name == 'cover' or field.name == 'banner' %}<svg><use href="#icon-image"></use></svg>
-                    {% elif field.name == 'pdf_file' %}<svg><use href="#icon-pdf"></use></svg>
-                    {% elif field.name == 'category' %}<svg><use href="#icon-tag"></use></svg>
-                    {% else %}<svg><use href="#icon-edit"></use></svg>{% endif %}
+                    {% if field.name == 'title' %}
+                        <svg><use href="#icon-book"></use></svg>
+
+                    {% elif field.name == 'author' %}
+                        <svg><use href="#icon-user"></use></svg>
+
+                    {% elif field.name == 'published_year' %}
+                        <svg><use href="#icon-calendar"></use></svg>
+
+                    {% elif field.name == 'description' %}
+                        <svg><use href="#icon-info"></use></svg>
+
+                    {% elif field.name == 'cover' or field.name == 'banner' %}
+                        <svg><use href="#icon-image"></use></svg>
+
+                    {% elif field.name == 'pdf_file' %}
+                        <svg><use href="#icon-pdf"></use></svg>
+
+                    {% elif field.name == 'category' %}
+                        <svg><use href="#icon-tag"></use></svg>
+
+                    {% else %}
+                        <svg><use href="#icon-edit"></use></svg>
+                    {% endif %}
+
                     <span>{{ field.label }}</span>
                 </label>
+
+                {% if field.name == 'cover' and book.cover %}
+                    <div class="current-file">
+                        <p><strong>Joriy muqova:</strong></p>
+                        <img src="{{ book.cover.url }}"
+                             alt="{{ book.title }}"
+                             style="max-width:180px;border-radius:10px;">
+                    </div>
+                {% endif %}
+
+                {% if field.name == 'banner' and book.banner %}
+                    <div class="current-file">
+                        <p><strong>Joriy banner:</strong></p>
+                        <img src="{{ book.banner.url }}"
+                             alt="{{ book.title }}"
+                             style="max-width:250px;border-radius:10px;">
+                    </div>
+                {% endif %}
+
+                {% if field.name == 'pdf_file' and book.pdf_file %}
+                    <div class="current-file">
+                        <p>
+                            <strong>Joriy PDF:</strong>
+                            <a href="{{ book.pdf_file.url }}" target="_blank">
+                                Ko‘rish
+                            </a>
+                        </p>
+                    </div>
+                {% endif %}
+
                 {{ field }}
-                {% if field.help_text %}<small class="help-text">{{ field.help_text }}</small>{% endif %}
-                {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+
+                {% if field.help_text %}
+                    <small class="help-text">{{ field.help_text }}</small>
+                {% endif %}
+
+                {% for error in field.errors %}
+                    <p class="field-error">{{ error }}</p>
+                {% endfor %}
             </div>
         {% endfor %}
 
         {% if form.non_field_errors %}
-            <div class="form-errors">{{ form.non_field_errors }}</div>
+            <div class="form-errors">
+                {{ form.non_field_errors }}
+            </div>
         {% endif %}
 
         <div class="page-actions">
-            <button class="btn btn-primary" type="submit"><svg><use href="#icon-save"></use></svg><span>Saqlash</span></button>
-            <a href="{% if book %}{% url 'book_detail' book.id %}{% else %}{% url 'book_list' %}{% endif %}" class="btn btn-ghost"><svg><use href="#icon-x"></use></svg><span>Bekor qilish</span></a>
+            <button class="btn btn-primary" type="submit">
+                <svg><use href="#icon-save"></use></svg>
+                <span>Saqlash</span>
+            </button>
+
+            <a href="{% if book %}{% url 'book_detail' book.id %}{% else %}{% url 'book_list' %}{% endif %}"
+               class="btn btn-ghost">
+                <svg><use href="#icon-x"></use></svg>
+                <span>Bekor qilish</span>
+            </a>
         </div>
+
     </form>
 </section>
 {% endblock %}

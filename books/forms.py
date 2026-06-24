@@ -37,8 +37,12 @@ class BookForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs["class"] = (field.widget.attrs.get("class", "") + " form-input").strip()
-        self.fields["banner"].required = True
-        self.fields["pdf_file"].required = True
+        if not self.instance.pk:
+           self.fields["banner"].required = True
+           self.fields["pdf_file"].required = True
+        else:
+           self.fields["banner"].required = False
+           self.fields["pdf_file"].required = False
 
     def clean_published_year(self):
         year = self.cleaned_data["published_year"]

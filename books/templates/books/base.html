@@ -17,7 +17,7 @@
         })();
     </script>
     <title>{% block title %}KitobX — Reading platform{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'books/css/style.css' %}?v=3">
+    <link rel="stylesheet" href="{% static 'books/css/style.css' %}?v=3">{% block extra_css %} {% endblock %}
 </head>
 <body>
     <svg class="svg-sprite" aria-hidden="true" focusable="false">
@@ -103,7 +103,7 @@
         <header class="site-header" data-reveal>
             <a href="{% url 'book_list' %}" class="brand" aria-label="KitobX bosh sahifa">
                 <span class="brand-mark"><svg><use href="#icon-library"></use></svg></span>
-                <span class="brand-copy"><strong>KitobX</strong><small>Reading platform</small></span>
+                <span class="brand-copy"><strong>Kitobsh</strong><small>Reading platform</small></span>
             </a>
 
             <button class="menu-toggle" type="button" aria-label="Menyuni ochish" aria-expanded="false">
@@ -111,14 +111,18 @@
             </button>
 
             <nav class="nav-links" aria-label="Asosiy navigatsiya">
-                <a href="{% url 'book_list' %}"><svg><use href="#icon-home"></use></svg><span>Katalog</span></a>
-                <a href="{% url 'recommendations' %}"><svg><use href="#icon-sparkles"></use></svg><span>AI tavsiya</span></a>
+                <a href="{% url 'book_list' %}"><svg><use href="#icon-home"></use></svg><span>Asosiy</span></a>
+                <a href="{% url 'club_list' %}" class="nav-link">
+                   <svg><use href="#icon-users"></use></svg>
+                   <span>Club</span>
+                </a>
+                <a href="{% url 'recommendations' %}"><svg><use href="#icon-sparkles"></use></svg><span>AI</span></a>
                 {% if user.is_authenticated %}
                     <a href="{% url 'wishlist' %}"><svg><use href="#icon-heart"></use></svg><span>Wishlist</span></a>
                 {% endif %}
                 <a href="{% url 'vip_plans' %}"><svg><use href="#icon-crown"></use></svg><span>VIP</span></a>
                 {% if user.is_staff %}
-                    <a href="{% url 'book_create' %}"><svg><use href="#icon-plus"></use></svg><span>Kitob qo'shish</span></a>
+                    <a href="{% url 'book_create' %}"><svg><use href="#icon-plus"></use></svg><span>Kitob</span></a>
                     <a href="/admin/"><svg><use href="#icon-admin"></use></svg><span>Admin</span></a>
                 {% endif %}
                 {% if user.is_authenticated %}
